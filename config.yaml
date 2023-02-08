@@ -1,0 +1,6 @@
+currentstate: offline
+datetimeformat: '%m-%d-%Y %H:%M:%S'
+hosts:
+- google.com2
+- ghost.com1
+pollfreq: 5
