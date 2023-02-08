@@ -2,12 +2,15 @@ import logging, config
 
 from lib.network import traceroute, runSpeedtest
 from lib.monitor import checkConnection, set_configValue
-from lib.datastore import createEvent
-from datetime import datetime
+from lib.datastore import createEvent, updateEvent
+from datetime import datetime, date
+from lib.datastore import monitorEvent
 
 # Constants and config
 loggingLevel = logging.DEBUG
 offlineTime = datetime.now()
+eventID = ""
+eventDate = ""
 
 # Setup logging file
 logging.basicConfig(filename='monitor.log', format='%(asctime)s:%(levelname)s:%(message)s', encoding='utf-8', level=loggingLevel)
@@ -27,6 +30,15 @@ if checkConnection(config.targetHosts):
         # Set currentstate to online
         set_configValue(config.configFile, "currentstate", "online")
         # Run speedtest
+        speedTest = runSpeedtest()
+
+        event = monitorEvent()
+        event.onlineping = speedTest.results.ping
+        event.downspeed = speedTest.results.download
+        event.upspeed = speedTest.results.upload
+
+        # Update event
+        updateEvent(str(eventDate) + "-" + str(eventID), event)
     
 else:
     # We are offline
@@ -35,6 +47,7 @@ else:
     # Change state to offline
     set_configValue(config.configFile, "currentstate", "offline")
     eventID = createEvent("offline")
+    eventDate = date.today()
 
     # Record offline stats
     offlineTime = datetime.now()

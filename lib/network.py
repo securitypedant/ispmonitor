@@ -43,4 +43,4 @@ def runSpeedtest():
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
     logging.debug("Speedtest results: " + result)
 
-    return result
+    return st

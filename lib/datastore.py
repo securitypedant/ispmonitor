@@ -1,16 +1,35 @@
-import uuid, logging, config
-from datetime import datetime
+import uuid, logging, config, json
+from json import JSONEncoder
+from datetime import datetime, date
 
-def writeData(content):
-    with open('data/events.csv', 'a') as file:
-        file.write(content)
+class monitorEvent:
+    def __init__(self, id, offlinetimedate):
+        self.id = id
+        self.offlinetimedate = offlinetimedate
+        self.onlinetimedate = ""
+        self.onlineping = 0
+        self.downspeed = 0
+        self.upspeed = 0
+
+class encoder(JSONEncoder):
+    def default(self, o):
+            return o.__dict__
+
+def appendDataFile(filename, content):
+    with open('data/' + str(filename), 'a') as file:
+        json_content = json.dumps(encoder().encode(content))
+        file.write(json_content + "\n")
 
 def createEvent(eventData):
-    eventID = uuid.uuid4()
-    current_time = datetime.now()
-    dataToWrite = str(eventID) + "," + current_time.strftime(config.dateTimeFormat) + "," + str(eventData)
+    event = monitorEvent(str(uuid.uuid4()), str(datetime.now()))
 
-    logging.debug(dataToWrite)
-    writeData(dataToWrite  + "\n")
+    logging.debug(event)
+    appendDataFile(str(date.today()) + "-" + event.id, event)
 
-    return eventID
+    return event.id
+
+def updateEvent(filename, event):
+    with open(filename, 'r') as openfile:
+        # Reading from json file
+        json_object = json.load(openfile)
+        print (json_object)
