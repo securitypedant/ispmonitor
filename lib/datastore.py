@@ -8,9 +8,9 @@ def writeData(content):
 def createEvent(eventData):
     eventID = uuid.uuid4()
     current_time = datetime.now()
-    dataToWrite = str(eventID) + "," + current_time.strftime(config.dateTimeFormat) + "," + str(eventData + "\n")
+    dataToWrite = str(eventID) + "," + current_time.strftime(config.dateTimeFormat) + "," + str(eventData)
 
     logging.debug(dataToWrite)
-    writeData(dataToWrite)
+    writeData(dataToWrite  + "\n")
 
     return eventID
