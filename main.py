@@ -7,7 +7,6 @@ from datetime import datetime, date
 
 # Constants and config
 loggingLevel = logging.DEBUG
-offlineTime = datetime.now()
 eventID = ""
 eventDate = ""
 traceTargetHost = "8.8.8.8"

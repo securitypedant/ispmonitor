@@ -26,7 +26,6 @@ def getDateNow():
     
 def writeDataFile(filename, content):
     with open('data/' + str(filename), 'w') as file:
-        #json_content = json.dumps(encoder().encode(content))
         json_content = json.dumps(content.__dict__)
         file.write(json_content)
 
