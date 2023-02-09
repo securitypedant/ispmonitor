@@ -6,7 +6,7 @@ def traceroute(hostname):
     tracedHosts = []
     traceHops = "6"
 
-    if config.osType == "Linux":
+    if config.osType == "Linux" or config.osType == "Darwin":
         traceroute = subprocess.Popen(["traceroute","-m",traceHops,hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(traceroute.stdout.readline,b""):
             line = line.decode("UTF-8")
@@ -33,7 +33,7 @@ def traceroute(hostname):
     return tracedHosts
 
 def pinghost(hostname):
-    if config.osType == "Linux":
+    if config.osType == "Linux" or config.osType == "Darwin":
         pingResult = subprocess.Popen(["ping",hostname, "-c", "4"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     else:
         pingResult = subprocess.Popen(["ping", "-n", "4", hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

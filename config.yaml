@@ -1,7 +1,8 @@
-currentstate: offline
+currentstate: online
 datetimeformat: '%m-%d-%Y %H:%M:%S'
-eventid: 01d48dc5-81be-4901-8506-f1776a8ebfd5
+eventdate: '2023-02-09'
+eventid: 48ad0086-eea8-45b1-b7e6-08cdc98e7921
 hosts:
-- google.com1
-- bbc.co.uk1
+- google.com
+- bbc.co.uk
 pollfreq: 5
