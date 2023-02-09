@@ -56,3 +56,5 @@ EOL
     fi
   fi
 }
+
+INSTALL_SYSTEMD_SERVICE
