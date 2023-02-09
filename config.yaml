@@ -1,6 +1,7 @@
 currentstate: offline
 datetimeformat: '%m-%d-%Y %H:%M:%S'
+eventid: 01d48dc5-81be-4901-8506-f1776a8ebfd5
 hosts:
-- google.com2
-- ghost.com1
+- google.com1
+- bbc.co.uk1
 pollfreq: 5

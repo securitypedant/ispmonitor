@@ -1,6 +1,6 @@
 # App files
 monitor.log
-data/events.csv
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
