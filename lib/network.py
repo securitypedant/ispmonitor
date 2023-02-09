@@ -57,7 +57,7 @@ def runSpeedtest():
     ping = st.results.ping
     download = st.download()
     upload = st.upload()
-    server = st.results.server["sponsor"] + " " + st.results.server["name"]
+    server = st.results.server["sponsor"] + "-" + st.results.server["name"]
 
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
     logging.debug("Speedtest results: " + result)
