@@ -19,6 +19,7 @@ logging.debug("Attempting to reach " + str(config.targetHosts))
 if checkConnection(config.targetHosts):
     # We are online
     logging.debug("We can reach all monitored hosts")
+    
     # Did we just come back online since previous check?
     if config.currentState == "offline":
         logging.debug("We have just reconnected")
@@ -50,4 +51,6 @@ else:
     # Store data
     eventID = createEvent("offline", tracedHosts)
     set_configValue(config.configFile, "eventid", eventID)
+    set_configValue(config.configFile, "eventdate", str(date.today()))
     
+logging.info("###########################################################################################################")

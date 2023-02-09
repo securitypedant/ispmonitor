@@ -9,5 +9,7 @@ dateTimeFormat = config["datetimeformat"]
 targetHosts = config["hosts"]
 currentState = config["currentstate"]
 eventID = config["eventid"]
+eventDate = config["eventdate"]
+
 
 osType = platform.system()

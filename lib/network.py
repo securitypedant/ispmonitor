@@ -33,7 +33,10 @@ def traceroute(hostname):
     return tracedHosts
 
 def pinghost(hostname):
-    pingResult = subprocess.Popen(["ping",hostname, "-c", "4"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if config.osType == "Linux":
+        pingResult = subprocess.Popen(["ping",hostname, "-c", "4"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    else:
+        pingResult = subprocess.Popen(["ping", "-n", "4", hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     pingResult.wait()
 
     """

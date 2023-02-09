@@ -16,10 +16,10 @@ def checkConnection(hosts):
             logging.error("Unable to reach " + host + " Ping return code:" + str(pingReturn))
             failedHosts = failedHosts + 1
 
-    if failedHosts < len(hosts):
-        return True
-    else:
+    if failedHosts > 0:
         return False
+    else:
+        return True
 
 def set_configValue(file, key, value):
     with open(file) as f:
