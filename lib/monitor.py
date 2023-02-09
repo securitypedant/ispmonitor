@@ -29,3 +29,9 @@ def set_configValue(file, key, value):
 
     with open(file, 'w') as f:
         yaml.safe_dump(doc, f, default_flow_style=False)
+
+def get_configValue(file, key):
+    with open(file) as f:
+        doc = yaml.safe_load(f)
+
+        return doc[key]

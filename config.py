@@ -7,7 +7,6 @@ with open(configFile, 'r') as stream:
 global dateTimeFormat, targetHosts, osType
 dateTimeFormat = config["datetimeformat"]
 targetHosts = config["hosts"]
-currentState = config["currentstate"]
 eventID = config["eventid"]
 eventDate = config["eventdate"]
 
