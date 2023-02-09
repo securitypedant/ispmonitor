@@ -1,20 +1,36 @@
-import subprocess, logging
+import subprocess, logging, config
 import speedtest
 
 def traceroute(hostname):
-  # Use local OS traceroute command to return a list of IP addresses.
-  tracedHosts = []
-  traceroute = subprocess.Popen(["traceroute","-m","4",hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  for line in iter(traceroute.stdout.readline,b""):
-      line = line.decode("UTF-8")
-      host = line.split("  ")
-      if len(host)>1:
-          host = host[1].split("(")
-          if len(host)>1:
-              host = host[1].split(")")
-              tracedHosts.append(host[0])
-              logging.debug("Traceroute found host:" + host[0])
-  return tracedHosts
+    # Use local OS traceroute command to return a list of IP addresses.
+    tracedHosts = []
+    traceHops = "6"
+
+    if config.osType == "Linux":
+        traceroute = subprocess.Popen(["traceroute","-m",traceHops,hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in iter(traceroute.stdout.readline,b""):
+            line = line.decode("UTF-8")
+            host = line.split("  ")
+            if len(host)>1:
+                host = host[1].split("(")
+                if len(host)>1:
+                    host = host[1].split(")")
+                    tracedHosts.append(host[0])
+                    logging.debug("Traceroute found host:" + host[0])
+    else:
+        traceroute = subprocess.Popen(["tracert","-h",traceHops,hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in iter(traceroute.stdout.readline,b""):
+            # FIXME doesn't handle when a hop has no DNS lookup and just returns an IP.
+            line = line.decode("UTF-8")
+            host = line.split("  ")
+            if len(host)>1:
+                host = host[8].split("[")
+                if len(host)>1:
+                    host = host[1].split("]")
+                    tracedHosts.append(host[0])
+                    logging.debug("Traceroute found host:" + host[0])
+    
+    return tracedHosts
 
 def pinghost(hostname):
     pingResult = subprocess.Popen(["ping",hostname, "-c", "4"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

@@ -1,4 +1,4 @@
-import uuid, logging, config, json
+import uuid, logging, config, json, os
 from json import JSONEncoder
 from datetime import datetime, date
 
@@ -25,6 +25,10 @@ def getDateNow():
     return timenow.strftime("%Y-%m-%d %H:%M:%S")
     
 def writeDataFile(filename, content):
+    # Check if data folder exists, if not, create it.
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
     with open('data/' + str(filename), 'w') as file:
         json_content = json.dumps(content.__dict__)
         file.write(json_content)
