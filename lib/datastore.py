@@ -1,6 +1,8 @@
-import uuid, logging, config, json, os
+import uuid, logging, config, json, os, logging
 from json import JSONEncoder
 from datetime import datetime, date
+
+logger = logging.getLogger(config.loggerName)
 
 class monitorEvent:
     def __init__(self, id):
@@ -38,13 +40,21 @@ def createEvent(eventData, tracedHosts):
     event.offlinetimedate = getDateNow()
     event.tracehosts = tracedHosts
 
-    logging.debug(json.dumps(encoder().encode(event)))
+    logger.debug(json.dumps(encoder().encode(event)))
     writeDataFile(str(date.today()) + "-" + event.id, event)
 
     return event.id
 
+def getEvent(filename):
+    with open('data/' + filename, 'r') as json_file:
+        # Reading from json file
+        event = json.load(json_file)
+
+    return event
+
 def updateEvent(filename, event):
     json_object = ""
+    # FIXME Handle files not existing.
     with open('data/' + filename, 'r') as json_file:
         # Reading from json file
         json_object = json.load(json_file)

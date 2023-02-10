@@ -1,37 +1,24 @@
-import logging, yaml
+import logging, config
 from lib.network import traceroute, pinghost, runSpeedtest
+
+logger = logging.getLogger(config.loggerName)
 
 def checkConnection(hosts):
     failedHosts = 0
-    
+
     for host in hosts:
     # Ping target to determine if network is available.
-        logging.debug("Pinging " + host)
+        logger.debug("Pinging " + host)
         pingReturn = pinghost(host)
 
         if pingReturn == 0:
             # Host is reachable
-            logging.debug("Success reaching " + host)
+            logger.debug("Success reaching " + host)
         else:
-            logging.error("Unable to reach " + host + " Ping return code:" + str(pingReturn))
+            logger.error("Unable to reach " + host + " Ping return code:" + str(pingReturn))
             failedHosts = failedHosts + 1
 
     if failedHosts > 0:
         return False
     else:
         return True
-
-def set_configValue(file, key, value):
-    with open(file) as f:
-        doc = yaml.safe_load(f)
-
-    doc[key] = value
-
-    with open(file, 'w') as f:
-        yaml.safe_dump(doc, f, default_flow_style=False)
-
-def get_configValue(file, key):
-    with open(file) as f:
-        doc = yaml.safe_load(f)
-
-        return doc[key]

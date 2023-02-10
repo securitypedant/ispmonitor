@@ -1,5 +1,7 @@
 import subprocess, logging, config
-import speedtest
+import speedtest, logging
+
+logger = logging.getLogger(config.loggerName)
 
 def traceroute(hostname):
     # Use local OS traceroute command to return a list of IP addresses.
@@ -16,7 +18,7 @@ def traceroute(hostname):
                 if len(host)>1:
                     host = host[1].split(")")
                     tracedHosts.append(host[0])
-                    logging.debug("Traceroute found host:" + host[0])
+                    logger.debug("Traceroute found host:" + host[0])
     else:
         traceroute = subprocess.Popen(["tracert","-h",traceHops,hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(traceroute.stdout.readline,b""):
@@ -28,7 +30,7 @@ def traceroute(hostname):
                 if len(host)>1:
                     host = host[1].split("]")
                     tracedHosts.append(host[0])
-                    logging.debug("Traceroute found host:" + host[0])
+                    logger.debug("Traceroute found host:" + host[0])
     
     return tracedHosts
 
@@ -50,7 +52,7 @@ def pinghost(hostname):
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
-    logging.debug("Starting speedtest")
+    logger.debug("Starting speedtest")
     st = speedtest.Speedtest()
     st.get_best_server()
 
@@ -60,6 +62,6 @@ def runSpeedtest():
     server = st.results.server["sponsor"] + "-" + st.results.server["name"]
 
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
-    logging.debug("Speedtest results: " + result)
+    logger.debug("Speedtest results: " + result)
 
     return st
