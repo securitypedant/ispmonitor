@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <title>ISP Monitoring tool</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css')}}" />
-    </head>
-    <body>
-        <div>ISP Monitoring tool</div>
-        <div class="message">Current status = {{ status }}
-    </body>
-</html>
+{% extends "layout.html" %}
+{% block title %}ISP Monitor{% endblock %}
+{% block content %}
+Welcome to the ISP Monitor tool.    
+{% endblock %}
