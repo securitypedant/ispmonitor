@@ -1,4 +1,4 @@
-import uuid, logging, config, json, os, logging
+import uuid, logging, config as config, json, os, logging
 from json import JSONEncoder
 from datetime import datetime, date
 

@@ -1,4 +1,4 @@
-import logging, config, signal, sys, getopt, time, os
+import logging, config as config, signal, sys, getopt, time, os
 import logging.handlers as handlers
 
 from lib.network import traceroute, runSpeedtest

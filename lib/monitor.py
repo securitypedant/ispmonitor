@@ -1,4 +1,4 @@
-import logging, config
+import logging, config as config
 from lib.network import traceroute, pinghost, runSpeedtest
 
 logger = logging.getLogger(config.loggerName)

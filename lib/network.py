@@ -1,4 +1,4 @@
-import subprocess, logging, config
+import subprocess, logging, config as config
 import speedtest, logging
 
 logger = logging.getLogger(config.loggerName)
