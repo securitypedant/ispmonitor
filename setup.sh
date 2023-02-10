@@ -17,6 +17,10 @@ HELP_DISPLAY() {
   echo
 }
 
+CONFIGURE_PYTHON_APP() {
+
+}
+
 INSTALL_SYSTEMD_SERVICE() {
   if ! command -v systemctl &> /dev/null; then
     echo "Cannot find Systemctl."
@@ -57,4 +61,5 @@ EOL
   fi
 }
 
+CONFIGURE_PYTHON_APP
 INSTALL_SYSTEMD_SERVICE

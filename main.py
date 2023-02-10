@@ -15,6 +15,7 @@ class SignalHandler:
 
     def request_shutdown(self, *args):
         print('Request to shutdown received, stopping')
+        logger.info('Request to shutdown received, stopping')
         self.shutdown_requested = True
 
     def can_run(self):
