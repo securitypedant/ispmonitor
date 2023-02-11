@@ -5,12 +5,19 @@ from config import set_configValue, get_configValue
 
 app = Flask(__name__)
 
+def getOnlineStatus():
+    status = get_configValue("currentstate")
+    if status == "online":
+        online = True
+    else:
+        online = False
+
+    return online
 
 @app.route("/")
 def home():
     folder = "data"
     files = []
-    status = get_configValue("currentstate")
     for filename in os.listdir(folder):
         path = os.path.join(folder, filename)
         if os.path.isfile(path):
@@ -18,7 +25,7 @@ def home():
 
     return render_template(
         "home.html",
-        status=status,
+        online=getOnlineStatus(),
         files=files
     )
 
@@ -26,13 +33,13 @@ def home():
 def log():
     with open("logs/monitor.log") as file: 
         loglines = file.readlines()
-        return render_template("log.html", loglines=loglines)
+        return render_template("log.html", loglines=loglines, online=getOnlineStatus())
 
 @app.route("/event")
 def event():
     eventid = request.args.get("eventid")
     with open('data/' + eventid, 'r') as file:
-        return render_template("event.html", file=file)
+        return render_template("event.html", file=file, online=getOnlineStatus())
 
 
 @app.route("/api/data")
