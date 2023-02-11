@@ -1,20 +1,39 @@
-import re
+import os
 from datetime import datetime
-
-from flask import Flask
-from flask import render_template
-import json
+from flask import Flask, render_template, request
+from config import set_configValue, get_configValue
 
 app = Flask(__name__)
 
 
 @app.route("/")
-def home(status = None):
+def home():
+    folder = "data"
+    files = []
+    status = get_configValue("currentstate")
+    for filename in os.listdir(folder):
+        path = os.path.join(folder, filename)
+        if os.path.isfile(path):
+            files.append(filename)
+
     return render_template(
         "home.html",
-        status="Online",
-        date=datetime.now()
+        status=status,
+        files=files
     )
+
+@app.route("/log")
+def log():
+    with open("logs/monitor.log") as file: 
+        loglines = file.readlines()
+        return render_template("log.html", loglines=loglines)
+
+@app.route("/event")
+def event():
+    eventid = request.args.get("eventid")
+    with open('data/' + eventid, 'r') as file:
+        return render_template("event.html", file=file)
+
 
 @app.route("/api/data")
 def get_data():

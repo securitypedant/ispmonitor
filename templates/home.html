@@ -1,5 +1,12 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor{% endblock %}
 {% block content %}
-Welcome to the ISP Monitor tool.    
+<h1>Welcome to the ISP Monitor tool.</h1>
+</hr>
+Current online status is = {{ status }}
+</hr>
+<h2>Events</h2>
+{% for file in files %}
+    <li><a href="{{ url_for('event', eventid=file) }}">{{ file }}</a></li>
+{% endfor %}
 {% endblock %}
