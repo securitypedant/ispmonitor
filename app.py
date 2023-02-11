@@ -1,4 +1,4 @@
-import os
+import os, json
 from datetime import datetime
 from flask import Flask, render_template, request
 from config import set_configValue, get_configValue
@@ -11,29 +11,47 @@ def getOnlineStatus():
         online = True
     else:
         online = False
-
+        
     return online
 
 @app.route("/")
 def home():
-    folder = "data"
-    files = []
-    for filename in os.listdir(folder):
-        path = os.path.join(folder, filename)
+    dataFolder = "data"
+    logFolder = "logs"
+    eventfiles = []
+    logfiles = []
+    events = []
+    for filename in os.listdir(dataFolder):
+        path = os.path.join(dataFolder, filename)
         if os.path.isfile(path):
-            files.append(filename)
+            eventfiles.append(filename)
+
+    for filename in os.listdir(logFolder):
+        path = os.path.join(logFolder, filename)
+        if os.path.isfile(path):
+            logfiles.append(filename)
+
+    # Get data from each event
+    for file in eventfiles:
+        with open('data/' + file, 'r') as event:
+            eventdict = eval(event.read())
+            eventdict['filename'] = file
+            eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
+            events.append(eventdict)
 
     return render_template(
         "home.html",
         online=getOnlineStatus(),
-        files=files
+        events=events,
+        logfiles=logfiles
     )
 
 @app.route("/log")
 def log():
-    with open("logs/monitor.log") as file: 
-        loglines = file.readlines()
-        return render_template("log.html", loglines=loglines, online=getOnlineStatus())
+    logfile = request.args.get("logid")
+    with open('logs/' + str(logfile), 'r') as file: 
+        lines = file.readlines()
+        return render_template("log.html", lines=lines, logfilename=logfile, online=getOnlineStatus())
 
 @app.route("/event")
 def event():

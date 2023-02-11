@@ -29,7 +29,6 @@ traceTargetHost = "8.8.8.8"
 signal_handler = SignalHandler()
 
 # Setup logging file
-# logging.basicConfig(filename='monitor.log', format='%(asctime)s:%(levelname)s:%(message)s', encoding='utf-8', level=loggingLevel)
 # Check if data folder exists, if not, create it.
 if not os.path.exists("logs"):
     os.makedirs("logs")

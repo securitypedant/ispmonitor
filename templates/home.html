@@ -1,10 +1,29 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor{% endblock %}
-{% block home_active%}{{"active"}}{% endblock %}
 {% block content %}
-<h3>Welcome to the ISP Monitor tool.</h3>
-<h4>Events</h4>
-{% for file in files %}
-    <li><a href="{{ url_for('event', eventid=file) }}">{{ file }}</a></li>
-{% endfor %}
+<div class="container">
+    <div class="row">
+        <h3>Welcome to the ISP Monitor tool</h3>
+    <div class="row">
+      <div class="col-sm">
+        <h4>Events</h4>
+        <ul class="list-group">
+            {% for event in events %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ event['offlinetimedate'] }}<a href="{{ url_for('event', eventid=event['filename']) }}">{{ event['id'] }}</a>
+                <span class="badge bg-primary rounded-pill">{{ event['downtimeformatted'] }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+      <div class="col-sm">
+        <h4>Logs</h4>
+        <ul class="list-group">
+            {% for logfile in logfiles %}
+            <li class="list-group-item d-flex"><a href="{{ url_for('log', logid=logfile) }}">{{ logfile }}</a></li>
+            {% endfor %}
+        </ul>
+      </div>
+    </div>
+</div>
 {% endblock %}

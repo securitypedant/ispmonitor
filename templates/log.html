@@ -2,8 +2,10 @@
 {% block title %}ISP Monitor log file{% endblock %}
 {% block log_active%}{{"active"}}{% endblock %}
 {% block content %}
-<h5>Log file</h5>
-{% for line in loglines %}
-    <li>{{ line }}</li>
-{% endfor %}
+<h5>Log file {{ logfilename }}</h5>
+<ul class="list-group">
+    {% for line in lines %}
+    <li class="list-group-item d-flex">{{ line }}</li>
+    {% endfor %}
+</ul>
 {% endblock %}
