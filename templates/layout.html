@@ -1,23 +1,33 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
     <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css')}}" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     </head>
 
     <body>
-        <div class="navbar">
-            <a href="{{ url_for('home') }}" class="navbar-brand">Home</a>
-            <a href="{{ url_for('log') }}" class="navbar-brand">Log</a>
-        </div>
-        <div class="body-content">
-            {% block content %}
-            {% endblock %}
-            <hr/>
-            <footer>
-                <p>&copy; 2023</p>
-            </footer>
-        </div>
+        <div class="container">
+            <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+              <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                <span class="fs-4">ISP Monitor</span>
+              </a>
+        
+              <ul class="nav nav-pills">
+                <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="{{ url_for('log') }}" class="nav-link">Log</a></li>
+              </ul>
+            </header>
+          </div>
+          <section class="py-3 text-left container">
+            <div class="row py-lg-1">
+              <div class="col-lg-10 col-md-8 mx-auto">
+                {% block content %}
+                {% endblock %}
+              </div>
+            </div>
+          </section>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
     </body>
 </html>

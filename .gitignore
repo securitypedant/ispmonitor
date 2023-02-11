@@ -1,6 +1,6 @@
 # App files
-monitor.log
 data/
+logs/
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
@@ -9,7 +9,7 @@ __pycache__/
 *$py.class
 
 # VSCode
-.vscode/
+#.vscode/
 
 # C extensions
 *.so

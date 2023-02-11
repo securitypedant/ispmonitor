@@ -1,8 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor log file{% endblock %}
 {% block content %}
-<div>ISP Monitor Log file</div>
-<hr/>
+<h3>Log file</h3>
 {% for line in loglines %}
     <li>{{ line }}</li>
 {% endfor %}
