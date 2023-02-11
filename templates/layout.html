@@ -8,21 +8,21 @@
     </head>
 
     <body>
-        <div class="container">
+        <div class="container-fluid">
             <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
               <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
                 <span class="fs-4">ISP Monitor</span>
               </a>
         
               <ul class="nav nav-pills">
-                <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="{{ url_for('log') }}" class="nav-link">Log</a></li>
+                <li class="nav-item"><a href="{{ url_for('home')}}" class="nav-link {% block home_active %}{% endblock %}">Home</a></li>
+                <li class="nav-item"><a href="{{ url_for('log') }}" class="nav-link {% block log_active %}{% endblock %}">Log</a></li>
               </ul>
             </header>
           </div>
           <section class="py-3 text-left container">
             <div class="row py-lg-1">
-              <div class="col-lg-10 col-md-8 mx-auto">
+              <div class="col-lg-12 col-md-8 mx-auto">
                 {% block content %}
                 {% endblock %}
               </div>
