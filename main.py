@@ -86,7 +86,7 @@ def monitorISP():
             set_configValue("eventid", eventID)
             set_configValue("eventdate", str(date.today()))
         
-    logger.info("----------------------------------------------------------------------------------------------------")
+    logger.debug("----------------------------------------------------------------------------------------------------")
 
 def main():
     opts, args = getopt.getopt(sys.argv[1:], "s")
