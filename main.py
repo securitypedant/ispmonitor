@@ -22,7 +22,7 @@ class SignalHandler:
         return not self.shutdown_requested
 
 # Constants and config
-loggingLevel = logging.DEBUG
+loggingLevel = logging.INFO
 eventID = ""
 eventDate = ""
 traceTargetHost = "8.8.8.8"

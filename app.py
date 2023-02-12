@@ -14,6 +14,13 @@ def getOnlineStatus():
         
     return online
 
+def createEventDict(file):
+    with open('data/' + file, 'r') as event:
+        eventdict = eval(event.read())
+        eventdict['filename'] = file
+        eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
+    return eventdict
+
 @app.route("/")
 def home():
     dataFolder = "data"
@@ -33,11 +40,7 @@ def home():
 
     # Get data from each event
     for file in eventfiles:
-        with open('data/' + file, 'r') as event:
-            eventdict = eval(event.read())
-            eventdict['filename'] = file
-            eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
-            events.append(eventdict)
+        events.append(createEventDict(file))
 
     return render_template(
         "home.html",
@@ -56,8 +59,8 @@ def log():
 @app.route("/event")
 def event():
     eventid = request.args.get("eventid")
-    with open('data/' + eventid, 'r') as file:
-        return render_template("event.html", file=file, online=getOnlineStatus())
+    eventdict = createEventDict(eventid)
+    return render_template("event.html", event=eventdict, online=getOnlineStatus())
 
 
 @app.route("/api/data")

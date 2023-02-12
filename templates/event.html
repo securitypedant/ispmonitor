@@ -1,6 +1,40 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor event details{% endblock %}
 {% block content %}
-<h3>Event details</h3>
-{{ file.read() }}
+<h4>Event details</h4>
+<div class="container p-3">
+    <div class="row align-items-start py-3">
+        <div class="row align-items-start py-3">
+            <div class="col">
+                Total downtime: {{ event["downtime"] }}
+            </div>
+        </div>
+      <div class="col">
+        id: {{ event["id"] }}
+      </div>
+      <div class="col">
+        Offline time/date: {{ event["offlinetimedate"] }}
+      </div>
+      <div class="col">
+        Online time/date: {{ event["onlinetimedate"] }}
+      </div>
+    </div>
+    <div class="row align-items-start py-3">
+        <div class="col">
+          Ping: {{ event["onlineping"] }} m/s
+        </div>
+        <div class="col">
+          Download speed: {{ event["downspeed"] }}
+        </div>
+        <div class="col">
+          Upload speed: {{ event["upspeed"] }}
+        </div>
+      </div>
+      <div class="row align-items-start">
+        <div class="col">
+          traceroute: {{ event["tracehosts"] }}
+        </div>
+      </div>
+  </div>
 {% endblock %}
+
