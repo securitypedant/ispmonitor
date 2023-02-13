@@ -5,7 +5,7 @@ from lib.network import traceroute, runSpeedtest
 from lib.monitor import checkConnection
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent
-from datetime import datetime, date
+from datetime import date
 
 class SignalHandler:
     shutdown_requested = False

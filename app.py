@@ -2,6 +2,13 @@ import os, json
 from datetime import datetime
 from flask import Flask, render_template, request
 from config import set_configValue, get_configValue
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from main import monitorISP
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+scheduler.add_job(monitorISP, 'interval', seconds=10)
 
 app = Flask(__name__)
 
