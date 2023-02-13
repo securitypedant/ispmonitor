@@ -7,26 +7,11 @@ from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent
 from datetime import date
 
-class SignalHandler:
-    shutdown_requested = False
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.request_shutdown)
-        signal.signal(signal.SIGTERM, self.request_shutdown)
-
-    def request_shutdown(self, *args):
-        print('Request to shutdown received, stopping')
-        logger.info('Request to shutdown received, stopping')
-        self.shutdown_requested = True
-
-    def can_run(self):
-        return not self.shutdown_requested
-
 # Constants and config
 loggingLevel = logging.INFO
 eventID = ""
 eventDate = ""
 traceTargetHost = "8.8.8.8"
-signal_handler = SignalHandler()
 
 # Setup logging file
 # Check if data folder exists, if not, create it.
@@ -64,7 +49,6 @@ def monitorISP():
 
             # Update event
             updateEvent(str(get_configValue("eventdate")) + "-" + get_configValue("eventid"), event)
-        
     else:
         # We are OFFLINE
         logger.info("Unable to connect to internet.")
@@ -86,24 +70,5 @@ def monitorISP():
             set_configValue("eventid", eventID)
             set_configValue("eventdate", str(date.today()))
         
-    logger.debug("----------------------------------------------------------------------------------------------------")
-
-def main():
-    opts, args = getopt.getopt(sys.argv[1:], "s")
-    if len(sys.argv) > 1:
-        print("Starting ISPMonitor as a service.")
-        logger.info("Starting ISPMonitor as a service.")
-        for opt, arg in opts:
-            if opt == "-s":
-                # Run as a service
-                while signal_handler.can_run():
-                    monitorISP()
-                    time.sleep(10)
-    else:
-        print("Running ISPMonitor once.")
-        logger.debug("Running ISPMonitor once.")        
-        monitorISP()          
-
-if __name__ == "__main__":
-    main()
+    logger.debug("----------------------------------------------------------------------------------------------------")            
 

@@ -8,7 +8,7 @@ from main import monitorISP
 
 scheduler = BackgroundScheduler()
 scheduler.start()
-scheduler.add_job(monitorISP, 'interval', seconds=10)
+scheduler.add_job(monitorISP, 'interval', seconds=5)
 
 app = Flask(__name__)
 
