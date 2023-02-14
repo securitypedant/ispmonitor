@@ -2,10 +2,32 @@
 {% block title %}ISP Monitor log file{% endblock %}
 {% block log_active%}{{"active"}}{% endblock %}
 {% block content %}
-<h5>Log file {{ logfilename }}</h5>
+<h5 class="p-2">Log file {{ logfilename }}</h5>
 <ul class="list-group">
     {% for line in lines %}
-    <li class="list-group-item d-flex py-1">{{ line }}</li>
+        {% if line.split(":")[3] == "INFO" %}
+            {% set buttoncolor="success" %}
+        {% elif line.split(":")[3] == "ERROR" %}
+            {% set buttoncolor="danger" %}
+        {% elif line.split(":")[3] == "DEBUG" %}
+            {% set buttoncolor="info" %}            
+        {% else %}
+            {% set buttoncolor="secondary" %}
+        {% endif %}
+    <li class="list-group-item d-flex py-1">
+        <span class="badge bg-{{buttoncolor}} rounded-pill">{{ line.split(":")[3] }}</span>
+        &nbsp;
+        {{ line.split(",")[0] }} - {{ line.split(":")[4] }}
+        &nbsp;
+        {% if line.split(":")[5] %}
+        <a class="" data-bs-toggle="collapse" href="#{{ line.split(",")[0].replace(" ","").replace(":","").replace("-","") }}" role="button" aria-expanded="false" aria-controls="{{ line.split(",")[0].replace(" ","").replace(":","").replace("-","") }}">
+            <i class="bi bi-caret-down-fill"></i>
+        </a>
+        {% endif %}
+    </li>
+    {% if line.split(":")[5] %}
+        <div class="collapse p-3" id="{{ line.split(",")[0].replace(" ","").replace(":","").replace("-","") }}">{{ line.split(":")[5] }}</div>
+    {% endif %}
     {% endfor %}
 </ul>
 {% endblock %}

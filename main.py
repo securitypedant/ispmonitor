@@ -32,7 +32,7 @@ def monitorISP():
     # Check connection.
     if checkConnection(hosts):
         # We are ONLINE
-        logger.info("Successfuly pinged " + str(hosts))
+        logger.info("Connection test success:Pinged hosts " + str(hosts))
         
         # Did we just come back online since previous check?
         if get_configValue("currentstate") == "offline":
@@ -51,24 +51,20 @@ def monitorISP():
             updateEvent(str(get_configValue("eventdate")) + "-" + get_configValue("eventid"), event)
     else:
         # We are OFFLINE
-        logger.info("Unable to connect to internet.")
-        
         # Were we previously offline?
         if get_configValue("currentstate") == "offline":
             event = getEvent(get_configValue("eventdate") + "-" + get_configValue("eventid"))
-            logger.debug("We are still offline since " + event["offlinetimedate"])
+            logger.error("We are still offline:Internet connection down since " + event["offlinetimedate"])
         else:
             # Change state to offline
             set_configValue("currentstate", "offline")
 
             # Traceroute to determine what might be failing.
             tracedHosts = traceroute(traceTargetHost)
-            logger.info("Traced hosts " + str(tracedHosts))
+            logger.error("Connection test failed:Traced hosts " + str(tracedHosts))
 
             # Store data
             eventID = createEvent("offline", tracedHosts)
             set_configValue("eventid", eventID)
             set_configValue("eventdate", str(date.today()))
         
-    logger.debug("----------------------------------------------------------------------------------------------------")            
-

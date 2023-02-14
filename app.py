@@ -3,12 +3,13 @@ from datetime import datetime
 from flask import Flask, render_template, request
 from config import set_configValue, get_configValue
 from apscheduler.schedulers.background import BackgroundScheduler
+from config import get_configValue
 
 from main import monitorISP
 
 scheduler = BackgroundScheduler()
 scheduler.start()
-scheduler.add_job(monitorISP, 'interval', seconds=10)
+scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"))
 
 app = Flask(__name__)
 
