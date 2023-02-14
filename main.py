@@ -1,11 +1,11 @@
-import logging, config as config, signal, sys, getopt, time, os
+import logging, config as config, os
 import logging.handlers as handlers
 
 from lib.network import traceroute, runSpeedtest
 from lib.monitor import checkConnection
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent
-from datetime import date
+from datetime import date, datetime
 
 # Constants and config
 loggingLevel = logging.INFO
@@ -30,6 +30,7 @@ def monitorISP():
     hosts = get_configValue("hosts")
     logger.debug("Attempting to reach " + str(hosts))
     # Check connection.
+    set_configValue("lastcheck", datetime.now().strftime(get_configValue('datetimeformat')))
     if checkConnection(hosts):
         # We are ONLINE
         logger.info("Connection test success:Pinged hosts " + str(hosts))

@@ -5,4 +5,5 @@ eventid: 7c7a876d-ab5e-4f7c-8bfd-5ad733747b55
 hosts:
 - google.com
 - bbc.co.uk
+lastcheck: 02-14-2023 12:31:47
 pollfreq: 10

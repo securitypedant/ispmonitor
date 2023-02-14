@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 from config import get_configValue
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue
+from datetime import datetime
 
 from main import monitorISP
 
@@ -12,6 +13,7 @@ scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"))
 
 app = Flask(__name__)
 
+@app.context_processor
 def getOnlineStatus():
     status = get_configValue("currentstate")
     if status == "online":
@@ -19,7 +21,12 @@ def getOnlineStatus():
     else:
         online = False
         
-    return online
+    return dict(onlinestatus=online)
+
+@app.context_processor
+def lastcheckdate():
+    lastcheck = get_configValue("lastcheck")
+    return dict(lastcheckdate=lastcheck)
 
 def createEventDict(file):
     with open('data/' + file, 'r') as event:
@@ -51,7 +58,6 @@ def home():
 
     return render_template(
         "home.html",
-        online=getOnlineStatus(),
         events=events,
         logfiles=logfiles
     )
@@ -61,16 +67,16 @@ def log():
     logfile = request.args.get("logid")
     with open('logs/' + str(logfile), 'r') as file: 
         lines = file.readlines()
-        return render_template("log.html", lines=lines, logfilename=logfile, online=getOnlineStatus())
+        return render_template("log.html", lines=lines, logfilename=logfile)
 
 @app.route("/event")
 def event():
     eventid = request.args.get("eventid")
     eventdict = createEventDict(eventid)
-    return render_template("event.html", event=eventdict, online=getOnlineStatus())
+    return render_template("event.html", event=eventdict)
 
 @app.route("/config")
 def config():
     with open('config.yaml', 'r') as configfile:
         configdict = yaml.safe_load(configfile)
-    return render_template("config.html", configdict=configdict, online=getOnlineStatus())
+    return render_template("config.html", configdict=configdict)
