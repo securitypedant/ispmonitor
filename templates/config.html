@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}ISP Monitor current configuration{% endblock %}
+{% block content %}
+<h5>Current configuration</h5>
+<ul class="list-group">
+  <li class="list-group-item d-flex py-1">Current State: {{ configdict["currentstate"] }}</li>
+  <li class="list-group-item d-flex py-1">Date / time format: {{ configdict["datetimeformat"] }}</li>
+  <li class="list-group-item d-flex py-1">Last event date: {{ configdict["eventdate"] }}</li>
+  <li class="list-group-item d-flex py-1">Last event ID: {{ configdict["eventid"] }}</li>
+  <li class="list-group-item d-flex py-1">Hosts to ping: {{ configdict["hosts"] }}</li>
+  <li class="list-group-item d-flex py-1">Poll frequency: {{ configdict["pollfreq"] }} seconds</li>
+</ul>
+{% endblock %}
+

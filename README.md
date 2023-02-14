@@ -4,6 +4,9 @@ This is a work in progress project. The final version will be a fully hostable I
 
 TODO
 - Add config display/edit in UX
+- Add recording of ping times on frequent check
+- Graph uptime/ping times
+- Add periodic speed test and graph results
 - Add filter / search to log viewer
 - Improve UX for event viewing
 - Add footer

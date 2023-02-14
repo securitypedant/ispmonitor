@@ -1,7 +1,6 @@
-import os, json
-from datetime import datetime
+import os, yaml
 from flask import Flask, render_template, request
-from config import set_configValue, get_configValue
+from config import get_configValue
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue
 
@@ -70,11 +69,8 @@ def event():
     eventdict = createEventDict(eventid)
     return render_template("event.html", event=eventdict, online=getOnlineStatus())
 
-
-@app.route("/api/data")
-def get_data():
-    with open('data/2023-02-09-6c4ec0af-4e0b-4c89-a17d-f520b52e3ec4', 'r') as file:
-            # Reading from json file
-            event = file.read()
-            #event = json.load(json_file)
-    return event
+@app.route("/config")
+def config():
+    with open('config.yaml', 'r') as configfile:
+        configdict = yaml.safe_load(configfile)
+    return render_template("config.html", configdict=configdict, online=getOnlineStatus())
