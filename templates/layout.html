@@ -9,24 +9,26 @@
   </head>
   <body>
     <!-- HEADER -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light p-3 mb-2">
-      <a class="navbar-brand" href="/">ISP Monitor</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('config')}}">Config</a>
-          </li>
-        </ul>
+    <nav class="navbar navbar-expand-md navbar-light bg-light p-3 mb-2">
+      <div class="container-fluid">       
+        <a class="navbar-brand" href="/">ISP Monitor</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('config')}}">Config</a>
+            </li>
+          </ul>
+        </div>
+        Last check: {{ lastcheckdate }}&nbsp;
+        {% if onlinestatus %}
+        <i class="bi bi-ethernet" style="font-size: 2rem; color: green;"></i>
+        {% else %}
+        <i class="bi bi-ethernet" style="font-size: 2rem; color: red;"></i>
+        {% endif %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>         
       </div>
-      Last check: {{ lastcheckdate }}&nbsp;
-      {% if onlinestatus %}
-      <i class="bi bi-ethernet" style="font-size: 2rem; color: green;"></i>
-      {% else %}
-      <i class="bi bi-ethernet" style="font-size: 2rem; color: red;"></i>
-      {% endif %}
     </nav>
     <!-- BODY -->
     <section class="py-2 text-left container-fluid">

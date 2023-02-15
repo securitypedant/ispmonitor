@@ -1,6 +1,8 @@
 import uuid, logging, config as config, json, os, logging
 from json import JSONEncoder
 from datetime import datetime, date
+import json, os
+from config import get_configValue
 
 logger = logging.getLogger(config.loggerName)
 
@@ -24,7 +26,7 @@ class encoder(JSONEncoder):
 
 def getDateNow():
     timenow = datetime.now()
-    return timenow.strftime("%Y-%m-%d %H:%M:%S")
+    return timenow.strftime(get_configValue("datetimeformat"))
     
 def writeDataFile(filename, content):
     # Check if data folder exists, if not, create it.
@@ -73,3 +75,14 @@ def updateEvent(filename, event):
 
     with open('data/' + str(filename), 'w') as file:
         file.write(str(json_object))
+
+def storeMonitorValue(type, value):
+    dictItem = {getDateNow():value}
+    with open('data/' + type + '.json', 'a') as file:
+        json.dump(dictItem, file)
+        file.write("\n")
+
+def readMonitorValues(type):
+    with open('data/' + type + '.json') as file:
+        dictOfValues = [json.loads(line) for line in file]
+    return dictOfValues

@@ -1,5 +1,6 @@
 import subprocess, logging, config as config
 import speedtest, logging
+from ping3 import ping
 
 logger = logging.getLogger(config.loggerName)
 
@@ -33,6 +34,19 @@ def traceroute(hostname):
                     logger.debug("Traceroute found host:" + host[0])
     
     return tracedHosts
+
+def ping3host(hostname):
+    try:
+        result = ping(hostname)
+    except:
+        result = False
+
+    if result == False:
+        return 68
+    elif result == None:
+        return 2
+    else:
+        return result
 
 def pinghost(hostname):
     if config.osType == "Linux" or config.osType == "Darwin":

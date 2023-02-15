@@ -4,7 +4,7 @@ import logging.handlers as handlers
 from lib.network import traceroute, runSpeedtest
 from lib.monitor import checkConnection
 from config import set_configValue, get_configValue
-from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent
+from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue
 from datetime import date, datetime
 
 # Constants and config
@@ -31,10 +31,12 @@ def monitorISP():
     logger.debug("Attempting to reach " + str(hosts))
     # Check connection.
     set_configValue("lastcheck", datetime.now().strftime(get_configValue('datetimeformat')))
-    if checkConnection(hosts):
+    checkResult = checkConnection(hosts)
+    if checkResult:
         # We are ONLINE
         logger.info("Connection test success:Pinged hosts " + str(hosts))
-        
+        storeMonitorValue('pingResult', checkResult)
+
         # Did we just come back online since previous check?
         if get_configValue("currentstate") == "offline":
             logger.debug("Internet has reconnected.")
