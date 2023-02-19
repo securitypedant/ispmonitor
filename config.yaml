@@ -1,10 +1,10 @@
 currentstate: online
 datetimeformat: '%Y-%m-%d %H:%M:%S'
-eventdate: '2023-02-18'
-eventid: 4b255347-bd8f-47f4-8cd2-7d3d7ab95cf9
+eventdate: '2023-02-19'
+eventid: 0c0ad36a-89c5-4cb8-b269-aa23e6fce2bd
 hosts:
 - google.com
 - bbc.co.uk
-lastcheck: '2023-02-18 18:10:09'
+lastcheck: '2023-02-19 15:53:54'
 pollfreq: 10
 speedtestfreq: 30

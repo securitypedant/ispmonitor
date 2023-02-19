@@ -3,6 +3,11 @@
 {% block content %}
 <div class="container">
     <div class="row">
+      <form method="POST">
+        <button type="submit" name="speedtest_button">Speedtest Now</button>&nbsp;Last speed test: Download={{ listLastSpeedTest[0] }}MB/s, Upload={{ listLastSpeedTest[1] }}MB/s
+    </form>
+    </div>
+    <div class="row">
       <div class="col-sm">
         <div id='latencychart' class='chart'”></div>
       </div>
@@ -12,7 +17,7 @@
     </div>
     <div class="row">
       <div class="col-sm">
-        <h4>Events</h4>
+        <h4>Outages</h4>
         <ul class="list-group">
           {% if events %}
             {% for event in events %}

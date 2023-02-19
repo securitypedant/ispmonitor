@@ -24,3 +24,5 @@ def checkConnection(hosts):
         return False
     else:
         return str(pingReturn).split(".")[0]
+
+

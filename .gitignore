@@ -2,6 +2,7 @@
 data/
 logs/
 test/
+graphdata/
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
@@ -135,3 +136,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+

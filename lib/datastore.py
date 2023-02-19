@@ -86,3 +86,11 @@ def readMonitorValues(type):
     with open('graphdata/' + type + '.json') as file:
         dictOfValues = [json.loads(line) for line in file]
     return dictOfValues
+
+def getLastSpeedTest():
+    with open('graphdata/speedTestResult.json') as file:
+        for line in file:
+            pass
+        dictLastCheck = json.loads(line)
+    return dictLastCheck
+    
