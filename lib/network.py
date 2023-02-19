@@ -66,6 +66,9 @@ def pinghost(hostname):
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
+
+    # Need a way to only run one at a time, incase a speed test is running when we have just returned from an outage.
+
     logger.debug("Starting speedtest")
     st = speedtest.Speedtest()
     st.get_best_server()

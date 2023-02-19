@@ -26,6 +26,13 @@ logHandler.setLevel(loggingLevel)
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
 
+def scheduledSpeedTest():
+    logger.debug("Running speed test")
+    speedTestResults = runSpeedtest()
+    speedTestResultsList = [round(speedTestResults.results.download / 1000 / 1000, 1), round(speedTestResults.results.upload / 1000 / 1000, 1)]
+
+    storeMonitorValue('speedtestResult', speedTestResultsList)
+
 def monitorISP():
     hosts = get_configValue("hosts")
     logger.debug("Attempting to reach " + str(hosts))

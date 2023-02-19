@@ -6,6 +6,8 @@ TODO
 - Add config edit in UX
 - Add recording of ping times on frequent check
 - Graph uptime/ping times
+    https://blog.heptanalytics.com/flask-plotly-dashboard/
+    https://towardsdatascience.com/an-interactive-web-dashboard-with-plotly-and-flask-c365cdec5e3f 
 - Add periodic speed test and graph results
 - Add filter / search to log viewer
 - Improve UX for event viewing

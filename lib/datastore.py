@@ -78,11 +78,11 @@ def updateEvent(filename, event):
 
 def storeMonitorValue(type, value):
     dictItem = {getDateNow():value}
-    with open('data/' + type + '.json', 'a') as file:
+    with open('graphdata/' + type + '.json', 'a') as file:
         json.dump(dictItem, file)
         file.write("\n")
 
 def readMonitorValues(type):
-    with open('data/' + type + '.json') as file:
+    with open('graphdata/' + type + '.json') as file:
         dictOfValues = [json.loads(line) for line in file]
     return dictOfValues
