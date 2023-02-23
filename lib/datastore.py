@@ -77,6 +77,10 @@ def updateEvent(filename, event):
         file.write(str(json_object))
 
 def storeMonitorValue(type, value):
+    # Check if data folder exists, if not, create it.
+    if not os.path.exists("graphdata"):
+        os.makedirs("graphdata")
+
     dictItem = {getDateNow():value}
     with open('graphdata/' + type + '.json', 'a') as file:
         json.dump(dictItem, file)
