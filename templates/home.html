@@ -1,11 +1,22 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor{% endblock %}
 {% block content %}
+<script>
+  window.onload=function(){
+    document.getElementById('speedtest_button').addEventListener('click', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/apex/runspeedtest', true);
+      xhr.onload = function() {
+        var result = JSON.parse(xhr.responseText);
+        document.getElementById('speedtest_result').innerHTML = result;
+      };
+      xhr.send();
+    });
+  }
+  </script>
 <div class="container">
     <div class="row">
-      <form method="POST">
-        <button type="submit" name="speedtest_button">Speedtest Now</button>&nbsp;Last speed test: Download={{ listLastSpeedTest[0] }}MB/s, Upload={{ listLastSpeedTest[1] }}MB/s
-    </form>
+        <button type="submit" name="speedtest_button" id="speedtest_button">Speedtest Now</button>&nbsp;<div id="speedtest_result">Last speed test: Download={{ listLastSpeedTest[0] }}MB/s, Upload={{ listLastSpeedTest[1] }}MB/s</div>
     </div>
     <div class="row">
       <div class="col-sm">

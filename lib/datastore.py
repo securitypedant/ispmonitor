@@ -28,12 +28,12 @@ def getDateNow():
     timenow = datetime.now()
     return timenow.strftime(get_configValue("datetimeformat"))
     
-def writeDataFile(filename, content):
+def writeEventsFile(filename, content):
     # Check if data folder exists, if not, create it.
-    if not os.path.exists("data"):
-        os.makedirs("data")
+    if not os.path.exists("events"):
+        os.makedirs("events")
 
-    with open('data/' + str(filename), 'w') as file:
+    with open('events/' + str(filename), 'w') as file:
         json_content = json.dumps(content.__dict__)
         file.write(json_content)
 
@@ -43,7 +43,7 @@ def createEvent(eventData, tracedHosts):
     event.tracehosts = tracedHosts
 
     logger.debug(json.dumps(encoder().encode(event)))
-    writeDataFile(str(date.today()) + "-" + event.id, event)
+    writeEventsFile(str(date.today()) + "-" + event.id, event)
 
     return event.id
 
@@ -57,7 +57,7 @@ def getEvent(filename):
 def updateEvent(filename, event):
     json_object = ""
     # FIXME Handle files not existing.
-    with open('data/' + filename, 'r') as json_file:
+    with open('events/' + filename, 'r') as json_file:
         # Reading from json file
         json_object = json.load(json_file)
         
@@ -73,7 +73,7 @@ def updateEvent(filename, event):
     downtimeSeconds = downtime.total_seconds()
     json_object["downtime"] = downtimeSeconds
 
-    with open('data/' + str(filename), 'w') as file:
+    with open('events/' + str(filename), 'w') as file:
         file.write(str(json_object))
 
 def storeMonitorValue(type, value):

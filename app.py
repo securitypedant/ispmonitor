@@ -1,5 +1,6 @@
-import os, yaml, plotly, json
-from flask import Flask, render_template, request, redirect, url_for
+import apex, redis
+import os, yaml, plotly, json, sys
+from flask import Flask, render_template, request, redirect, url_for, g
 from config import get_configValue
 from lib.datastore import readMonitorValues, getLastSpeedTest
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,10 +12,14 @@ from main import monitorISP, scheduledSpeedTest
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-
 scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 app = Flask(__name__)
+# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
+# NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
+app.secret_key = 'BAD_SECRET_KEY'
+
+app.add_url_rule('/apex/runspeedtest', view_func=apex.runspeedtest)
 
 @app.context_processor
 def getOnlineStatus():
@@ -32,22 +37,15 @@ def lastcheckdate():
     return dict(lastcheckdate=lastcheck)
 
 def createEventDict(file):
-    with open('data/' + file, 'r') as event:
+    with open('events/' + file, 'r') as event:
         eventdict = eval(event.read())
         eventdict['filename'] = file
         eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
     return eventdict
 
-@app.route("/", methods=['POST'])
-def submit_home():
-    if 'speedtest_button' in request.form:
-        scheduledSpeedTest()
-
-    return redirect(url_for('render_home'))
-
 @app.route("/", methods=['GET'])
 def render_home():
-    dataFolder = "data"
+    dataFolder = "events"
     logFolder = "logs"
     eventfiles = []
     logfiles = []
@@ -143,4 +141,4 @@ def config():
     return render_template("config.html", configdict=configdict)
 
 if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+    app.run()

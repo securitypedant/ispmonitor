@@ -1,8 +1,10 @@
 # App files
-data/
+events/
 logs/
 test/
 graphdata/
+graphdata/pingResult.json
+graphdata/speedtestResult.json
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
@@ -11,7 +13,7 @@ __pycache__/
 *$py.class
 
 # VSCode
-#.vscode/
+.vscode/
 
 # C extensions
 *.so
@@ -136,4 +138,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
 

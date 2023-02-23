@@ -3,7 +3,14 @@
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
 TODO
+- Add list of network devices used for internet and include in outage check
+ - DNS, router, firewall etc
+ - Goal is to be able to determine why the internet is not available. Is your router down? DNS failure?
 - Add config edit in UX
+- Make speedtest an AJAX request
+ - Have the UX show a wait while the request is processed.
+    https://subscription.packtpub.com/book/web-development/9781783983407/4/ch04lvl1sec36/dealing-with-xhr-requests
+    https://javascript.plainenglish.io/how-to-form-submissions-with-flask-and-ajax-dfde9891c620
 - Improve logic for detecting an outage.
  - Possible a speedtest is blocking the scheduler.
 - Improve logging
@@ -21,3 +28,4 @@ TODO
 - Add SMS notifications of outages (how would this work when the internet is down?)
 - Add database support (MySQL, MongoDB)
 - Fix MonitorISP to run standalone
+- Create setup for running on a Raspberry Pi 4 B 

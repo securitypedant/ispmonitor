@@ -6,9 +6,10 @@ from lib.monitor import checkConnection
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue
 from datetime import date, datetime
+from flask import session, Flask, g
 
 # Constants and config
-loggingLevel = logging.INFO
+loggingLevel = logging.DEBUG
 eventID = ""
 eventDate = ""
 traceTargetHost = "8.8.8.8"
@@ -25,6 +26,8 @@ logHandler = handlers.TimedRotatingFileHandler('logs/monitor.log', when='D', int
 logHandler.setLevel(loggingLevel)
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
+
+app = Flask(__name__)
 
 def scheduledSpeedTest():
     logger.debug("Running speed test")
