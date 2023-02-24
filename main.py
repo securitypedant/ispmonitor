@@ -1,5 +1,6 @@
 import logging, config as config, os
 import logging.handlers as handlers
+import redis
 
 from lib.network import traceroute, runSpeedtest
 from lib.monitor import checkConnection
@@ -30,17 +31,24 @@ logger.addHandler(logHandler)
 app = Flask(__name__)
 
 def scheduledSpeedTest():
-    logger.debug("Running speed test")
-    speedTestResults = runSpeedtest()
-    speedTestResultsList = [round(speedTestResults.results.download / 1000 / 1000, 1), round(speedTestResults.results.upload / 1000 / 1000, 1)]
+    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    if redis_conn.get('isspeedtestrunning') == "no":
+        logger.debug("Running speed test")
+        speedTestResults = runSpeedtest()
+        speedTestResultsList = [round(speedTestResults.results.download / 1000 / 1000, 1), round(speedTestResults.results.upload / 1000 / 1000, 1)]
 
-    storeMonitorValue('speedtestResult', speedTestResultsList)
+        storeMonitorValue('speedtestResult', speedTestResultsList)
+    else:
+        logger.debug("Scheduler attempted to run speedtest job, but it was already running.")
 
 def monitorISP():
+    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
     hosts = get_configValue("hosts")
     logger.debug("Attempting to reach " + str(hosts))
     # Check connection.
-    set_configValue("lastcheck", datetime.now().strftime(get_configValue('datetimeformat')))
+    redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
+    
     checkResult = checkConnection(hosts)
     if checkResult:
         # We are ONLINE
@@ -48,29 +56,30 @@ def monitorISP():
         storeMonitorValue('pingResult', checkResult)
 
         # Did we just come back online since previous check?
-        if get_configValue("currentstate") == "offline":
+        if redis_conn.get('currentstate') == 'offline':
             logger.debug("Internet has reconnected.")
 
             # Set currentstate to online
-            set_configValue("currentstate", "online")
+            redis_conn.set('currentstate', 'online')
+            
             # Run speedtest
             speedTest = runSpeedtest()
-            event = monitorEvent(get_configValue("eventid"))
+            event = monitorEvent(redis_conn.get('eventid'))
             event.onlineping = speedTest.results.ping
             event.downspeed = speedTest.results.download
             event.upspeed = speedTest.results.upload
 
             # Update event
-            updateEvent(str(get_configValue("eventdate")) + "-" + get_configValue("eventid"), event)
+            updateEvent(str(redis_conn.get('eventdate')) + "-" + redis_conn.get('eventid'), event)
     else:
         # We are OFFLINE
         # Were we previously offline?
-        if get_configValue("currentstate") == "offline":
-            event = getEvent(get_configValue("eventdate") + "-" + get_configValue("eventid"))
+        if redis_conn.get('currentstate') == 'offline':
+            event = getEvent(redis_conn.get('eventdate') + "-" + redis_conn.get('eventid'))
             logger.error("We are still offline:Internet connection down since " + event["offlinetimedate"])
         else:
             # Change state to offline
-            set_configValue("currentstate", "offline")
+            redis_conn.set('currentstate', 'offline')
 
             # Traceroute to determine what might be failing.
             tracedHosts = traceroute(traceTargetHost)
@@ -78,6 +87,5 @@ def monitorISP():
 
             # Store data
             eventID = createEvent("offline", tracedHosts)
-            set_configValue("eventid", eventID)
-            set_configValue("eventdate", str(date.today()))
-        
+            redis_conn.set('eventid', eventID)
+            redis_conn.set('eventdate', str(date.today()))        

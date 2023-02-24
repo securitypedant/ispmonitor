@@ -48,13 +48,16 @@ def createEvent(eventData, tracedHosts):
     return event.id
 
 def getEvent(filename):
-    with open('data/' + filename, 'r') as json_file:
+    with open('events/' + filename, 'r') as json_file:
         # Reading from json file
         event = json.load(json_file)
 
     return event
 
 def updateEvent(filename, event):
+    if not os.path.exists("events"):
+        os.makedirs("events")
+
     json_object = ""
     # FIXME Handle files not existing.
     with open('events/' + filename, 'r') as json_file:

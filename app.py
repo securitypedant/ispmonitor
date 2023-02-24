@@ -1,30 +1,36 @@
 import apex, redis
-import os, yaml, plotly, json, sys
-from flask import Flask, render_template, request, redirect, url_for, g
-from config import get_configValue
+import os, yaml, plotly, json, datetime
+from flask import Flask, render_template, request, redirect, url_for
 from lib.datastore import readMonitorValues, getLastSpeedTest
 from apscheduler.schedulers.background import BackgroundScheduler
-from config import get_configValue
+from config import get_configValue, set_configValue
+from main import monitorISP, scheduledSpeedTest
+
 import pandas as pd
 import plotly.express as px
-from main import monitorISP, scheduledSpeedTest
+import redis
+
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+#scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 app = Flask(__name__)
 # Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
 # NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
 app.secret_key = 'BAD_SECRET_KEY'
 
-app.add_url_rule('/apex/runspeedtest', view_func=apex.runspeedtest)
+app.add_url_rule('/apex/runspeedtest', view_func=apex.apexspeedtest)
+
+redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_conn.set('isspeedtestrunning', 'no')
+redis_conn.set('currentstate', 'online')
 
 @app.context_processor
 def getOnlineStatus():
-    status = get_configValue("currentstate")
-    if status == "online":
+    status = redis_conn.get('currentstate')
+    if status == 'online':
         online = True
     else:
         online = False
@@ -33,7 +39,7 @@ def getOnlineStatus():
 
 @app.context_processor
 def lastcheckdate():
-    lastcheck = get_configValue("lastcheck")
+    lastcheck = redis_conn.get('lastcheck')
     return dict(lastcheckdate=lastcheck)
 
 def createEventDict(file):
@@ -134,11 +140,20 @@ def event():
     eventdict = createEventDict(eventid)
     return render_template("event.html", event=eventdict)
 
-@app.route("/config")
+@app.route("/config", methods=['GET', 'POST'])
 def config():
-    with open('config.yaml', 'r') as configfile:
-        configdict = yaml.safe_load(configfile)
-    return render_template("config.html", configdict=configdict)
+    if request.method == 'POST':
+        #Enumerate form data into file.
+        set_configValue("pollfreq", request.form['pollfreq'])
+        set_configValue('speedtestfreq', request.form['speedtestfreq'])
+        set_configValue('datetimeformat', request.form['datetimeformat'])
+        set_configValue('hosts', request.form['hosts'])
+
+        return render_template("config.html", configdict=configdict)
+    else:
+        with open('config.yaml', 'r') as configfile:
+            configdict = yaml.safe_load(configfile)
+        return render_template("config.html", configdict=configdict)
 
 if __name__ == "__main__":
     app.run()

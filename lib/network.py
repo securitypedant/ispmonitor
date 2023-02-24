@@ -1,6 +1,7 @@
 import subprocess, logging, config as config
 import speedtest, logging
 from ping3 import ping
+import redis
 
 logger = logging.getLogger(config.loggerName)
 
@@ -67,6 +68,9 @@ def pinghost(hostname):
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
 
+    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    redis_conn.set('isspeedtestrunning', 'yes')
+
     logger.debug("Starting speedtest")
     st = speedtest.Speedtest()
     st.get_best_server()
@@ -78,5 +82,7 @@ def runSpeedtest():
 
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
     logger.debug("Speedtest results: " + result)
+
+    redis_conn.set('isspeedtestrunning', 'no')
 
     return st
