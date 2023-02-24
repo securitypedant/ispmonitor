@@ -3,11 +3,37 @@
 {% block content %}
 <h5>Current configuration</h5>
 <form method="post" action="/config">
-  {% for key, value in configdict.items() %}
-    <label for="{{ key }}">{{ key }}:</label>
-    <input type="text" name="{{ key }}" id="{{ key }}" value="{{ value }}">
-    <br>
-  {% endfor %}
+  <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="datetimeformat">Date/Time Format</label></div>
+    <div class="col-auto"><input type="text" name="datetimeformat" id="datetimeformat" value="{{ configdict['datetimeformat'] }}"></div>
+  </div>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="pollfreq">Internet check frequency (seconds)</label></div>
+    <div class="col-auto"><input type="text" name="pollfreq" id="pollfreq" value="{{ configdict['pollfreq'] }}"></div>
+  </div>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="speedtestfreq">Speed test frequency (Seconds)</label></div>
+    <div class="col-auto"><input type="text" name="speedtestfreq" id="speedtestfreq" value="{{ configdict['speedtestfreq'] }}"></div>
+  </div>
+  <div class="row g-3 align-items-center">
+  <div class="col-auto"><label for="hosts">Hosts to check</label></div>
+  <div class="col-auto"><textarea name="hosts" id="hosts">{% for host in configdict['hosts'] %}
+{{ host }}{% endfor %}</textarea></div></div>
   <input type="submit" value="Save">
 </form>
 {% endblock %}
+
+
+<div class="row g-3 align-items-center">
+  <div class="col-auto">
+    <label class="form-label" for="{{ key }}">{{ key }}:</label>
+  </div>
+  <div class="col-auto">
+    <input class="form-control" type="text" name="{{ key }}" id="{{ key }}" value="{{ value }}">
+  </div>
+  <div class="col-auto">
+    <span id="passwordHelpInline" class="form-text">
+      Replace this with help text.
+    </span>
+  </div>
+</div>  

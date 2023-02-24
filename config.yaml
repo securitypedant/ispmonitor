@@ -1,6 +1,6 @@
 datetimeformat: '%Y-%m-%d %H:%M:%S'
-hosts: 
- - google.com
- - bbc.co.uk
+hosts:
+- google.com
+- bbc.co.uk
 pollfreq: 10
 speedtestfreq: 60

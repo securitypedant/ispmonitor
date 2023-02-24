@@ -3,7 +3,7 @@ from lib.network import runSpeedtest
 from lib.datastore import storeMonitorValue
 import redis
 
-def apexspeedtest():
+def ajaxspeedtest():
     redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
     if redis_conn.get('isspeedtestrunning') == "no":
         speedTestResults = runSpeedtest()

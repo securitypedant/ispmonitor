@@ -1,4 +1,4 @@
-import apex, redis
+import ajax, redis
 import os, yaml, plotly, json, datetime
 from flask import Flask, render_template, request, redirect, url_for
 from lib.datastore import readMonitorValues, getLastSpeedTest
@@ -21,7 +21,7 @@ app = Flask(__name__)
 # NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
 app.secret_key = 'BAD_SECRET_KEY'
 
-app.add_url_rule('/apex/runspeedtest', view_func=apex.apexspeedtest)
+app.add_url_rule('/ajax/runspeedtest', view_func=ajax.ajaxspeedtest)
 
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 redis_conn.set('isspeedtestrunning', 'no')
@@ -144,16 +144,17 @@ def event():
 def config():
     if request.method == 'POST':
         #Enumerate form data into file.
-        set_configValue("pollfreq", request.form['pollfreq'])
-        set_configValue('speedtestfreq', request.form['speedtestfreq'])
+        set_configValue("pollfreq", int(request.form['pollfreq']))
+        set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
         set_configValue('datetimeformat', request.form['datetimeformat'])
-        set_configValue('hosts', request.form['hosts'])
+        
+        hostsList = request.form['hosts'].split('\r\n')
 
-        return render_template("config.html", configdict=configdict)
-    else:
-        with open('config.yaml', 'r') as configfile:
-            configdict = yaml.safe_load(configfile)
-        return render_template("config.html", configdict=configdict)
+        set_configValue('hosts', hostsList)
+
+    with open('config.yaml', 'r') as configfile:
+        configdict = yaml.safe_load(configfile)
+    return render_template("config.html", configdict=configdict)
 
 if __name__ == "__main__":
     app.run()

@@ -5,7 +5,7 @@
   window.onload=function(){
     document.getElementById('speedtest_button').addEventListener('click', function() {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', '/apex/runspeedtest', true);
+      xhr.open('GET', '/ajax/runspeedtest', true);
       xhr.onload = function() {
         var result = JSON.parse(xhr.responseText);
         document.getElementById('speedtest_result').innerHTML = result;
