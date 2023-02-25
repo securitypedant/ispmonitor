@@ -1,6 +1,38 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor current configuration{% endblock %}
 {% block content %}
+<script>
+  window.onload=function(){
+    document.getElementById('listspeedtestservers_button').addEventListener('click', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/ajax/listspeedtestservers', true);
+      xhr.onload = function() {
+        var result = JSON.parse(xhr.responseText);
+
+        // Get a reference to the HTML element where you want to display the data
+        const container = document.getElementById("speedtestserverlist_result");
+
+        // Clear the contents of the container (optional)
+        container.innerHTML = "";
+
+        result.forEach(function(value) {
+          // Create a new HTML element to display the value
+          const element = document.createElement("div");
+        
+          // Set the text content of the element to the value
+          element.textContent = "ID=" + value[0].id + " - " + value[0].sponsor + " in " + value[0].name;
+        
+          // Add the new element to the container
+          container.appendChild(element);
+        });
+
+
+        // document.getElementById('speedtestserverlist_result').innerHTML = result;
+      };
+      xhr.send();
+    });
+  }
+  </script>
 <h5>Current configuration</h5>
 <form method="post" action="/config">
   <div class="row g-3 align-items-center">
@@ -12,28 +44,25 @@
     <div class="col-auto"><input type="text" name="pollfreq" id="pollfreq" value="{{ configdict['pollfreq'] }}"></div>
   </div>
   <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="hosts">Hosts to check</label></div>
+    <div class="col-auto"><textarea name="hosts" id="hosts">{% for host in configdict['hosts'] %}
+{{ host }}{% endfor %}</textarea></div></div>
+  <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="speedtestfreq">Speed test frequency (Seconds)</label></div>
     <div class="col-auto"><input type="text" name="speedtestfreq" id="speedtestfreq" value="{{ configdict['speedtestfreq'] }}"></div>
   </div>
   <div class="row g-3 align-items-center">
-  <div class="col-auto"><label for="hosts">Hosts to check</label></div>
-  <div class="col-auto"><textarea name="hosts" id="hosts">{% for host in configdict['hosts'] %}
-{{ host }}{% endfor %}</textarea></div></div>
+    <div class="col-auto"><label for="speedtestserverid">Speed test server (ID)</label></div>
+    <div class="col-auto"><input type="text" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
+  </div>
+
   <input type="submit" value="Save">
 </form>
+<hr>
+<h5>Speedtest Servers</h5>
+<div class="row">
+  <button type="submit" name="listspeedtestservers_button" id="listspeedtestservers_button">List Speedtest Servers</button>
+</div>
+<div id="speedtestserverlist_result">
+</div>
 {% endblock %}
-
-
-<div class="row g-3 align-items-center">
-  <div class="col-auto">
-    <label class="form-label" for="{{ key }}">{{ key }}:</label>
-  </div>
-  <div class="col-auto">
-    <input class="form-control" type="text" name="{{ key }}" id="{{ key }}" value="{{ value }}">
-  </div>
-  <div class="col-auto">
-    <span id="passwordHelpInline" class="form-text">
-      Replace this with help text.
-    </span>
-  </div>
-</div>  

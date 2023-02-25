@@ -2,6 +2,7 @@ import subprocess, logging, config as config
 import speedtest, logging
 from ping3 import ping
 import redis
+from config import get_configValue
 
 logger = logging.getLogger(config.loggerName)
 
@@ -72,13 +73,23 @@ def runSpeedtest():
     redis_conn.set('isspeedtestrunning', 'yes')
 
     logger.debug("Starting speedtest")
+    speedtestserverid = get_configValue('speedtestserverid')
+
     st = speedtest.Speedtest()
-    st.get_best_server()
+    speedtestServer = ""
+
+    if speedtestserverid == 'Any':
+        speedtestServer = st.get_best_server()
+    else:
+        servers = [speedtestserverid]
+        speedtestServer = st.get_servers(servers)
 
     ping = st.results.ping
     download = st.download()
     upload = st.upload()
-    server = st.results.server["sponsor"] + "-" + st.results.server["name"]
+    server = st.results.server["sponsor"] + " - " + st.results.server["name"]
+
+    logger.debug("Speedtest using: " + server)
 
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
     logger.debug("Speedtest results: " + result)

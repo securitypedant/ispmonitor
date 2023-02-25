@@ -1,4 +1,4 @@
-import logging, config as config, os
+import logging, config as config
 import logging.handlers as handlers
 import redis
 
@@ -7,7 +7,7 @@ from lib.monitor import checkConnection
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue
 from datetime import date, datetime
-from flask import session, Flask, g
+from flask import Flask
 
 # Constants and config
 loggingLevel = logging.DEBUG
@@ -16,10 +16,6 @@ eventDate = ""
 traceTargetHost = "8.8.8.8"
 
 # Setup logging file
-# Check if data folder exists, if not, create it.
-if not os.path.exists("logs"):
-    os.makedirs("logs")
-
 logger = logging.getLogger(config.loggerName)
 logger.setLevel(loggingLevel)
 formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')

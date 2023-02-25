@@ -29,10 +29,6 @@ def getDateNow():
     return timenow.strftime(get_configValue("datetimeformat"))
     
 def writeEventsFile(filename, content):
-    # Check if data folder exists, if not, create it.
-    if not os.path.exists("events"):
-        os.makedirs("events")
-
     with open('events/' + str(filename), 'w') as file:
         json_content = json.dumps(content.__dict__)
         file.write(json_content)
@@ -55,9 +51,6 @@ def getEvent(filename):
     return event
 
 def updateEvent(filename, event):
-    if not os.path.exists("events"):
-        os.makedirs("events")
-
     json_object = ""
     # FIXME Handle files not existing.
     with open('events/' + filename, 'r') as json_file:
@@ -81,9 +74,6 @@ def updateEvent(filename, event):
 
 def storeMonitorValue(type, value):
     # Check if data folder exists, if not, create it.
-    if not os.path.exists("graphdata"):
-        os.makedirs("graphdata")
-
     dictItem = {getDateNow():value}
     with open('graphdata/' + type + '.json', 'a') as file:
         json.dump(dictItem, file)
@@ -95,9 +85,12 @@ def readMonitorValues(type):
     return dictOfValues
 
 def getLastSpeedTest():
-    with open('graphdata/speedTestResult.json') as file:
-        for line in file:
-            pass
-        dictLastCheck = json.loads(line)
-    return dictLastCheck
-    
+    try:
+        with open('graphdata/speedTestResult.json') as file:
+            for line in file:
+                pass
+            dictLastCheck = json.loads(line)
+        return dictLastCheck
+    except:
+        return {0:0}
+        

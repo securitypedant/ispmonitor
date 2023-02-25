@@ -10,22 +10,40 @@ import pandas as pd
 import plotly.express as px
 import redis
 
+app = Flask(__name__)
+# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
+# NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
+app.secret_key = 'BAD_SECRET_KEY'
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
 #scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
-app = Flask(__name__)
-# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
-# NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
-app.secret_key = 'BAD_SECRET_KEY'
-
-app.add_url_rule('/ajax/runspeedtest', view_func=ajax.ajaxspeedtest)
-
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 redis_conn.set('isspeedtestrunning', 'no')
 redis_conn.set('currentstate', 'online')
+
+@app.before_first_request
+def appStartup():
+    # Check if required folders exist.
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    if not os.path.exists("events"):
+        os.makedirs("events")
+
+    if not os.path.exists("graphdata"):
+        os.makedirs("graphdata")
+
+    # Create data files if they don't exist.
+    if not os.path.isfile('graphdata/speedtestResult.json'):
+        with open('graphdata/speedtestResult.json', 'w'):
+            pass
+
+    if not os.path.isfile('graphdata/pingResult.json'):
+        with open('graphdata/pingResult.json', 'w'):
+            pass
 
 @app.context_processor
 def getOnlineStatus():
@@ -48,6 +66,10 @@ def createEventDict(file):
         eventdict['filename'] = file
         eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
     return eventdict
+
+# ------------------ ROUTES  ------------------ 
+app.add_url_rule('/ajax/runspeedtest', view_func=ajax.ajaxspeedtest)
+app.add_url_rule('/ajax/listspeedtestservers', view_func=ajax.ajaxListSpeedtestServers)
 
 @app.route("/", methods=['GET'])
 def render_home():
@@ -147,10 +169,12 @@ def config():
         set_configValue("pollfreq", int(request.form['pollfreq']))
         set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
         set_configValue('datetimeformat', request.form['datetimeformat'])
+        set_configValue('speedtestserverid', request.form['speedtestserverid'])
         
         hostsList = request.form['hosts'].split('\r\n')
+        hostsListClean = [item.strip() for item in hostsList]
 
-        set_configValue('hosts', hostsList)
+        set_configValue('hosts', hostsListClean)
 
     with open('config.yaml', 'r') as configfile:
         configdict = yaml.safe_load(configfile)

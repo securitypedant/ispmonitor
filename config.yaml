@@ -4,3 +4,4 @@ hosts:
 - bbc.co.uk
 pollfreq: 10
 speedtestfreq: 60
+speedtestserverid: '1783'
