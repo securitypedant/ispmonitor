@@ -5,6 +5,7 @@ import redis
 from config import get_configValue
 
 logger = logging.getLogger(config.loggerName)
+redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 def traceroute(hostname):
     # Use local OS traceroute command to return a list of IP addresses.
@@ -69,7 +70,6 @@ def pinghost(hostname):
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
 
-    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
     redis_conn.set('isspeedtestrunning', 'yes')
 
     logger.debug("Starting speedtest")

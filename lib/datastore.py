@@ -1,10 +1,12 @@
 import uuid, logging, config as config, json, os, logging
 from json import JSONEncoder
 from datetime import datetime, date
-import json, os
+import json, os, redis, pathlib
 from config import get_configValue
+from flask import g
 
 logger = logging.getLogger(config.loggerName)
+redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 class monitorEvent:
     def __init__(self, id):
@@ -29,7 +31,7 @@ def getDateNow():
     return timenow.strftime(get_configValue("datetimeformat"))
     
 def writeEventsFile(filename, content):
-    with open('events/' + str(filename), 'w') as file:
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(filename), 'w') as file:
         json_content = json.dumps(content.__dict__)
         file.write(json_content)
 
@@ -44,7 +46,7 @@ def createEvent(eventData, tracedHosts):
     return event.id
 
 def getEvent(filename):
-    with open('events/' + filename, 'r') as json_file:
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder'))  / filename, 'r') as json_file:
         # Reading from json file
         event = json.load(json_file)
 
@@ -53,7 +55,7 @@ def getEvent(filename):
 def updateEvent(filename, event):
     json_object = ""
     # FIXME Handle files not existing.
-    with open('events/' + filename, 'r') as json_file:
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / filename, 'r') as json_file:
         # Reading from json file
         json_object = json.load(json_file)
         
@@ -69,24 +71,26 @@ def updateEvent(filename, event):
     downtimeSeconds = downtime.total_seconds()
     json_object["downtime"] = downtimeSeconds
 
-    with open('events/' + str(filename), 'w') as file:
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(filename), 'w') as file:
         file.write(str(json_object))
 
 def storeMonitorValue(type, value):
     # Check if data folder exists, if not, create it.
     dictItem = {getDateNow():value}
-    with open('graphdata/' + type + '.json', 'a') as file:
+    type = type + '.json'
+    with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type, 'a') as file:
         json.dump(dictItem, file)
         file.write("\n")
 
 def readMonitorValues(type):
-    with open('graphdata/' + type + '.json') as file:
+    type = type + '.json'
+    with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type) as file:
         dictOfValues = [json.loads(line) for line in file]
     return dictOfValues
 
 def getLastSpeedTest():
     try:
-        with open('graphdata/speedTestResult.json') as file:
+        with open(pathlib.Path(redis_conn.get('graphdatafolder')) / 'speedTestResult.json') as file:
             for line in file:
                 pass
             dictLastCheck = json.loads(line)

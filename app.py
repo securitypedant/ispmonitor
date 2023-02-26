@@ -1,6 +1,6 @@
-import ajax, redis
+import ajax, redis, pathlib
 import os, yaml, plotly, json, datetime
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, g
 from lib.datastore import readMonitorValues, getLastSpeedTest
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue, set_configValue
@@ -18,11 +18,18 @@ app.secret_key = 'BAD_SECRET_KEY'
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-#scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-redis_conn.set('isspeedtestrunning', 'no')
-redis_conn.set('currentstate', 'online')
+
+@app.before_request
+def before_request_func():    
+    redis_conn.set('isspeedtestrunning', 'no')
+    redis_conn.set('currentstate', 'online')
+    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
+    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
+    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
+        
 
 @app.before_first_request
 def appStartup():
@@ -61,7 +68,7 @@ def lastcheckdate():
     return dict(lastcheckdate=lastcheck)
 
 def createEventDict(file):
-    with open('events/' + file, 'r') as event:
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / file, 'r') as event:
         eventdict = eval(event.read())
         eventdict['filename'] = file
         eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
@@ -73,13 +80,14 @@ app.add_url_rule('/ajax/listspeedtestservers', view_func=ajax.ajaxListSpeedtestS
 
 @app.route("/", methods=['GET'])
 def render_home():
-    dataFolder = "events"
-    logFolder = "logs"
+    eventsFolder = redis_conn.get('eventsdatafolder')
+    logFolder = redis_conn.get('logsdatafolder')
     eventfiles = []
     logfiles = []
     events = []
-    for filename in os.listdir(dataFolder):
-        path = os.path.join(dataFolder, filename)
+
+    for filename in os.listdir(eventsFolder):
+        path = os.path.join(eventsFolder, filename)
         if os.path.isfile(path):
             eventfiles.append(filename)
 
