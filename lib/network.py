@@ -7,6 +7,49 @@ from config import get_configValue
 logger = logging.getLogger(config.loggerName)
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
+def checkConnection(hosts):
+    failedHosts = 0
+    returnDict = []
+    pingReturnDict = []
+
+    for host in hosts:
+    # Ping target to determine if network is available.
+        logger.debug("Pinging " + host)
+        
+        # https://pypi.org/project/ping3/
+        # Ping the host once, default timeout is 4 seconds.
+        pingReturn = ping(host, unit='ms')
+
+        # ['Success',[[google.com, 35][bbc.co.uk, 20]]]
+        # ['Partial',[[google.com, 35][bbc.co.uk, NoHost]]]
+        # ['Failed',[[google.com, Timeout][bbc.co.uk, Timeout]]]
+
+        if pingReturn:
+            # Host is reachable
+            logger.debug("Success reaching " + host)
+            pingReturnDict.append([host,pingReturn])
+        elif not pingReturn:
+            # False when Ping cannot resolve hostname
+            logger.warning("Cannot resolve " + host)
+            pingReturnDict.append([host,'CannotResolve'])
+            failedHosts = failedHosts + 1
+        else:
+            # None when Ping timesout trying to connect.
+            logger.warning("Timeout pinging " + host)
+            pingReturnDict.append([host,'Timeout'])
+            failedHosts = failedHosts + 1
+
+    if failedHosts == 0:
+        returnDict = ['Success',pingReturnDict]
+    elif failedHosts == len(hosts):
+        # All hosts failed to return a response.
+        returnDict = ['Failed',pingReturnDict]
+    else:
+        # At least one host failed to respond.
+        returnDict = ['Partial',pingReturnDict]
+    
+    return returnDict
+
 def traceroute(hostname):
     # Use local OS traceroute command to return a list of IP addresses.
     tracedHosts = []
@@ -82,6 +125,7 @@ def runSpeedtest():
         speedtestServer = st.get_best_server()
     else:
         servers = [speedtestserverid]
+        # TODO: Fix the speedtest.NoMatchedServers error. 
         speedtestServer = st.get_servers(servers)
 
     ping = st.results.ping

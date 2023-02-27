@@ -1,30 +1,18 @@
-import logging, config as config
-import logging.handlers as handlers
-import redis
+import redis, logging, config as config
 
-from lib.network import traceroute, runSpeedtest
-from lib.monitor import checkConnection
+from lib.network import traceroute, runSpeedtest, checkConnection
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue
 from datetime import date, datetime
 from flask import Flask
 
 # Constants and config
-loggingLevel = logging.DEBUG
 eventID = ""
 eventDate = ""
 traceTargetHost = "8.8.8.8"
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
-logger.setLevel(loggingLevel)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-logHandler = handlers.TimedRotatingFileHandler('logs/monitor.log', when='D', interval=1, backupCount=31)
-logHandler.setLevel(loggingLevel)
-logHandler.setFormatter(formatter)
-logger.addHandler(logHandler)
-
-app = Flask(__name__)
 
 def scheduledSpeedTest():
     redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
@@ -35,9 +23,9 @@ def scheduledSpeedTest():
 
         storeMonitorValue('speedtestResult', speedTestResultsList)
     else:
-        logger.debug("Scheduler attempted to run speedtest job, but it was already running.")
+        logger.warning("Scheduler attempted to run speedtest job, but it was already running.")
 
-def monitorISP():
+def scheduledCheckConnection():
     redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
     hosts = get_configValue("hosts")
@@ -46,10 +34,12 @@ def monitorISP():
     redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
     
     checkResult = checkConnection(hosts)
-    if checkResult:
+
+    if checkResult[0] == 'Success' or checkResult[0] == 'Partial':
         # We are ONLINE
         logger.info("Connection test success:Pinged hosts " + str(hosts))
-        storeMonitorValue('pingResult', checkResult)
+        for index, host in enumerate(hosts):
+            storeMonitorValue('pingResult', checkResult[1][index])
 
         # Did we just come back online since previous check?
         if redis_conn.get('currentstate') == 'offline':

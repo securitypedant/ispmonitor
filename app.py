@@ -1,10 +1,13 @@
 import ajax, redis, pathlib
 import os, yaml, plotly, json, datetime
+import logging, config as config
+import logging.handlers as handlers
+
 from flask import Flask, render_template, request, redirect, url_for, g
 from lib.datastore import readMonitorValues, getLastSpeedTest
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue, set_configValue
-from main import monitorISP, scheduledSpeedTest
+from main import scheduledCheckConnection, scheduledSpeedTest
 
 import pandas as pd
 import plotly.express as px
@@ -15,12 +18,22 @@ app = Flask(__name__)
 # NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
 app.secret_key = 'BAD_SECRET_KEY'
 
+redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
+# Setup logging file
+logger = logging.getLogger(config.loggerName)
+loggingLevel = logging.DEBUG
+logger.setLevel(loggingLevel)
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+logHandler.setLevel(loggingLevel)
+logHandler.setFormatter(formatter)
+logger.addHandler(logHandler)
+
 scheduler = BackgroundScheduler()
 scheduler.start()
-scheduler.add_job(monitorISP, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
-
-redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+#scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
+#scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 @app.before_request
 def before_request_func():    
@@ -80,6 +93,7 @@ app.add_url_rule('/ajax/listspeedtestservers', view_func=ajax.ajaxListSpeedtestS
 
 @app.route("/", methods=['GET'])
 def render_home():
+
     eventsFolder = redis_conn.get('eventsdatafolder')
     logFolder = redis_conn.get('logsdatafolder')
     eventfiles = []
@@ -105,13 +119,26 @@ def render_home():
     xVals = []
     yVals = []
 
-    for latencyDict in latencyData:
-        key = list(latencyDict.keys())
-        value = list(latencyDict.values())
-        xVals.append(key[0])
-        yVals.append(int(value[0]))
+    #for index, latencyDict in enumerate(latencyData):
+        #key = list(latencyDict.keys())
+        #value = list(latencyDict.values())
+        #xVals.append(key[0])
+        #yVals[index].append(value[0][1])
 
-    latencyDF = pd.DataFrame({'Date/Time':xVals,'ms':yVals})
+    newLatencyDict = {}
+
+    for item in latencyData:
+        for key, value in item.items():
+            if value[0] not in newLatencyDict:
+                newLatencyDict[value[0]] = []
+            newLatencyDict[value[0]].append(value[1])
+
+    latencyDF = pd.DataFrame({'Date/Time':xVals})
+    for key, value in newLatencyDict.items():
+        col_name = key
+        latencyDF[col_name] = value
+        latencyDF.plot(x='x', value=col_name, kind='line')
+
     ltfig = px.line(latencyDF, x='Date/Time', y='ms', title="Connection latency")
      
     ltfig.update_layout(
