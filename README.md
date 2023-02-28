@@ -3,6 +3,8 @@
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
 TODO
+- In config, switch for enable/pause/disable scheduled jobs.
+- Check if redis server is running and fail gracefully.
 - Improve monitor ping to average out the hosts latency. Maybe store all the real values, but when graphing, build an average.
 - Show in UX what the server is currently doing. i.e. speed test, checking internet, etc
     - https://www.velotio.com/engineering-blog/how-to-implement-server-sent-events-using-python-flask-and-react

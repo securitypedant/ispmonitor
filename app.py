@@ -11,6 +11,10 @@ from main import scheduledCheckConnection, scheduledSpeedTest
 
 import pandas as pd
 import plotly.express as px
+
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
 import redis
 
 app = Flask(__name__)
@@ -22,13 +26,7 @@ redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=Tru
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
-loggingLevel = logging.DEBUG
-logger.setLevel(loggingLevel)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
-logHandler.setLevel(loggingLevel)
-logHandler.setFormatter(formatter)
-logger.addHandler(logHandler)
+
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -43,6 +41,13 @@ def before_request_func():
     redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
     redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
         
+    loggingLevel = logging.DEBUG
+    logger.setLevel(loggingLevel)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler.setLevel(loggingLevel)
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
 
 @app.before_first_request
 def appStartup():
@@ -144,7 +149,7 @@ def render_home():
     )
 
     # Create graphJSON
-    graphJSON = json.dumps(ltfig, cls=plotly.utils.PlotlyJSONEncoder)
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     speedTestData = readMonitorValues('speedtestResult')
     stxVals = []
@@ -164,6 +169,7 @@ def render_home():
     stfig.update_layout(
         title="Connection speed",
         yaxis_title="Speed in MB/s",
+        legend=dict(x=0, y=1.15, orientation='h'),
         legend_title="Bandwidth"
     )     
     # Create graphJSON
