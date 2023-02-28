@@ -11,6 +11,10 @@ from main import scheduledCheckConnection, scheduledSpeedTest
 
 import pandas as pd
 import plotly.express as px
+
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
 import redis
 
 app = Flask(__name__)
@@ -22,17 +26,11 @@ redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=Tru
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
-loggingLevel = logging.DEBUG
-logger.setLevel(loggingLevel)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
-logHandler.setLevel(loggingLevel)
-logHandler.setFormatter(formatter)
-logger.addHandler(logHandler)
+
 
 scheduler = BackgroundScheduler()
 scheduler.start()
-#scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
+scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
 #scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 @app.before_request
@@ -43,6 +41,13 @@ def before_request_func():
     redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
     redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
         
+    loggingLevel = logging.DEBUG
+    logger.setLevel(loggingLevel)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler.setLevel(loggingLevel)
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
 
 @app.before_first_request
 def appStartup():
@@ -116,9 +121,6 @@ def render_home():
 
     latencyData = readMonitorValues('pingResult')
 
-    xVals = []
-    yVals = []
-
     #for index, latencyDict in enumerate(latencyData):
         #key = list(latencyDict.keys())
         #value = list(latencyDict.values())
@@ -126,28 +128,43 @@ def render_home():
         #yVals[index].append(value[0][1])
 
     newLatencyDict = {}
+    newLatencyDict['x'] = []
 
     for item in latencyData:
         for key, value in item.items():
+            if key not in newLatencyDict['x']:
+                newLatencyDict['x'].append(key)
             if value[0] not in newLatencyDict:
                 newLatencyDict[value[0]] = []
             newLatencyDict[value[0]].append(value[1])
 
-    latencyDF = pd.DataFrame({'Date/Time':xVals})
-    for key, value in newLatencyDict.items():
-        col_name = key
-        latencyDF[col_name] = value
-        latencyDF.plot(x='x', value=col_name, kind='line')
+    latencyDF = pd.DataFrame(newLatencyDict)
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    ltfig = px.line(latencyDF, x='Date/Time', y='ms', title="Connection latency")
-     
-    ltfig.update_layout(
-        title="Connection latency",
-        yaxis_title="Latency in ms"
+    # add the y1 trace to the plot
+    fig.add_trace(
+        go.Scatter(x=latencyDF['x'], y=latencyDF['google.com'], name='google.com'),
+        secondary_y=False,
+    )
+
+    # add the y2 trace to the plot
+    fig.add_trace(
+        go.Scatter(x=latencyDF['x'], y=latencyDF['bbc.co.uk'], name='bbc.co.uk'),
+        secondary_y=True,
+    )
+
+    # set the x-axis label
+    fig.update_xaxes(title_text="Date/Time")
+
+    # set the chart title
+    fig.update_layout(
+        title_text="Connection Latency",
+        legend=dict(x=0, y=1.15, orientation='h'),
+        legend_title="Host"
     )
 
     # Create graphJSON
-    graphJSON = json.dumps(ltfig, cls=plotly.utils.PlotlyJSONEncoder)
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     speedTestData = readMonitorValues('speedtestResult')
     stxVals = []
@@ -167,6 +184,7 @@ def render_home():
     stfig.update_layout(
         title="Connection speed",
         yaxis_title="Speed in MB/s",
+        legend=dict(x=0, y=1.15, orientation='h'),
         legend_title="Bandwidth"
     )     
     # Create graphJSON
