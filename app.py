@@ -145,7 +145,8 @@ def render_home():
         title="Connection latency",
         yaxis_title="Latency in ms",
         xaxis_title="Date / Time",
-        legend_title="Hosts"
+        legend=dict(x=0, y=1.15, orientation='h'),        
+        legend_title="Hosts: "
     )
 
     # Create graphJSON
@@ -170,7 +171,7 @@ def render_home():
         title="Connection speed",
         yaxis_title="Speed in MB/s",
         legend=dict(x=0, y=1.15, orientation='h'),
-        legend_title="Bandwidth"
+        legend_title="Bandwidth: "
     )     
     # Create graphJSON
     stgraphJSON = json.dumps(stfig, cls=plotly.utils.PlotlyJSONEncoder)
