@@ -32,7 +32,7 @@ logger.addHandler(logHandler)
 
 scheduler = BackgroundScheduler()
 scheduler.start()
-#scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
+scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
 #scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
 @app.before_request
@@ -116,34 +116,31 @@ def render_home():
 
     latencyData = readMonitorValues('pingResult')
 
-    xVals = []
-    yVals = []
-
-    #for index, latencyDict in enumerate(latencyData):
-        #key = list(latencyDict.keys())
-        #value = list(latencyDict.values())
-        #xVals.append(key[0])
-        #yVals[index].append(value[0][1])
-
     newLatencyDict = {}
+    newLatencyDict['datetime'] = []
 
     for item in latencyData:
         for key, value in item.items():
-            if value[0] not in newLatencyDict:
-                newLatencyDict[value[0]] = []
-            newLatencyDict[value[0]].append(value[1])
+            newLatencyDict['datetime'].append(key)
+            for latency in value:
+                if latency[0] not in newLatencyDict:
+                    newLatencyDict[latency[0]] = []
+                newLatencyDict[latency[0]].append(latency[1])
 
-    latencyDF = pd.DataFrame({'Date/Time':xVals})
+    latencyDF = pd.DataFrame(newLatencyDict)
+
+    hostsList = []
     for key, value in newLatencyDict.items():
-        col_name = key
-        latencyDF[col_name] = value
-        latencyDF.plot(x='x', value=col_name, kind='line')
+        if key != 'datetime':
+            hostsList.append(key)
 
-    ltfig = px.line(latencyDF, x='Date/Time', y='ms', title="Connection latency")
-     
+    ltfig = px.line(latencyDF, x='datetime', y=hostsList, title="Connection latency")
+ 
     ltfig.update_layout(
         title="Connection latency",
-        yaxis_title="Latency in ms"
+        yaxis_title="Latency in ms",
+        xaxis_title="Date / Time",
+        legend_title="Hosts"
     )
 
     # Create graphJSON
@@ -161,8 +158,8 @@ def render_home():
         stDownyVals.append(int(value[0]))
         stUpyVals.append(int(value[1]))
 
-    speedTestDF = pd.DataFrame({'Date/Time':stxVals,'Download':stDownyVals,'Upload':stUpyVals})
-    stfig = px.line(speedTestDF, x='Date/Time', y=['Download','Upload'], title="Connection speed")
+    speedTestDF = pd.DataFrame({'Date / Time':stxVals,'Download':stDownyVals,'Upload':stUpyVals})
+    stfig = px.line(speedTestDF, x='Date / Time', y=['Download','Upload'], title="Connection speed")
 
     stfig.update_layout(
         title="Connection speed",

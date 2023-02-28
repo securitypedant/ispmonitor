@@ -20,23 +20,23 @@ def checkConnection(hosts):
         # Ping the host once, default timeout is 4 seconds.
         pingReturn = ping(host, unit='ms')
 
-        # ['Success',[[google.com, 35][bbc.co.uk, 20]]]
-        # ['Partial',[[google.com, 35][bbc.co.uk, NoHost]]]
-        # ['Failed',[[google.com, Timeout][bbc.co.uk, Timeout]]]
+        # ['Success',[[google.com, 35, 'Success'][bbc.co.uk, 20, 'Success']]]
+        # ['Partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'LookupFailed']]]
+        # ['Failed',[[google.com, 0, 'Timeout'][bbc.co.uk, 0, 'Timeout']]]
 
         if pingReturn:
             # Host is reachable
             logger.debug("Success reaching " + host)
-            pingReturnDict.append([host,pingReturn])
+            pingReturnDict.append([host,pingReturn,'Success'])
         elif not pingReturn:
             # False when Ping cannot resolve hostname
             logger.warning("Cannot resolve " + host)
-            pingReturnDict.append([host,'CannotResolve'])
+            pingReturnDict.append([host,0,'CannotResolve'])
             failedHosts = failedHosts + 1
         else:
             # None when Ping timesout trying to connect.
             logger.warning("Timeout pinging " + host)
-            pingReturnDict.append([host,'Timeout'])
+            pingReturnDict.append([host,0,'Timeout'])
             failedHosts = failedHosts + 1
 
     if failedHosts == 0:

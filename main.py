@@ -1,4 +1,4 @@
-import redis, logging, config as config
+import redis, logging, math, config as config
 
 from lib.network import traceroute, runSpeedtest, checkConnection
 from config import set_configValue, get_configValue
@@ -37,9 +37,8 @@ def scheduledCheckConnection():
 
     if checkResult[0] == 'Success' or checkResult[0] == 'Partial':
         # We are ONLINE
-        logger.info("Connection test success:Pinged hosts " + str(hosts))
-        for index, host in enumerate(hosts):
-            storeMonitorValue('pingResult', checkResult[1][index])
+        logger.info("Connection test " + checkResult[0] + " : Pinged hosts " + str(hosts))
+        storeMonitorValue('pingResult', checkResult[1])
 
         # Did we just come back online since previous check?
         if redis_conn.get('currentstate') == 'offline':
