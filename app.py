@@ -149,7 +149,7 @@ def render_home():
     )
 
     # Create graphJSON
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    graphJSON = json.dumps(ltfig, cls=plotly.utils.PlotlyJSONEncoder)
 
     speedTestData = readMonitorValues('speedtestResult')
     stxVals = []
