@@ -7,6 +7,9 @@ from config import get_configValue
 logger = logging.getLogger(config.loggerName)
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
+def getInterfaces():
+    pass
+
 def checkConnection(hosts):
     failedHosts = 0
     returnDict = []
