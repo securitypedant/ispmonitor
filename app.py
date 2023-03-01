@@ -33,22 +33,6 @@ scheduler.start()
 scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
 #scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
 
-@app.before_request
-def before_request_func():    
-    redis_conn.set('isspeedtestrunning', 'no')
-    redis_conn.set('currentstate', 'online')
-    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
-    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
-    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
-        
-    loggingLevel = logging.DEBUG
-    logger.setLevel(loggingLevel)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
-    logHandler.setLevel(loggingLevel)
-    logHandler.setFormatter(formatter)
-    logger.addHandler(logHandler)
-
 @app.before_first_request
 def appStartup():
     # Check if required folders exist.
@@ -69,6 +53,23 @@ def appStartup():
     if not os.path.isfile('graphdata/pingResult.json'):
         with open('graphdata/pingResult.json', 'w'):
             pass
+
+    redis_conn.set('isspeedtestrunning', 'no')
+    redis_conn.set('currentstate', 'online')
+    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
+    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
+    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
+    
+    redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
+    redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
+
+    loggingLevel = logging.DEBUG
+    logger.setLevel(loggingLevel)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler.setLevel(loggingLevel)
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
 
 @app.context_processor
 def getOnlineStatus():
@@ -95,6 +96,7 @@ def createEventDict(file):
 # ------------------ ROUTES  ------------------ 
 app.add_url_rule('/ajax/runspeedtest', view_func=ajax.ajaxspeedtest)
 app.add_url_rule('/ajax/listspeedtestservers', view_func=ajax.ajaxListSpeedtestServers)
+app.add_url_rule('/ajax/test', view_func=ajax.ajaxTest)
 
 @app.route("/", methods=['GET'])
 def render_home():

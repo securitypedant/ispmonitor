@@ -1,15 +1,55 @@
 import subprocess, logging, config as config
-import speedtest, logging
+import speedtest, logging, psutil
 from ping3 import ping
-import redis
+import redis, netifaces, dns.resolver
 from config import get_configValue
+from datastore import getDateNow
 
 logger = logging.getLogger(config.loggerName)
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
-def getInterfaces():
-    pass
+def checkDNSServers(host):
+    # https://dnspython.readthedocs.io/en/stable/index.html
+    resolver = dns.resolver.Resolver()
 
+    dns_servers = resolver.nameservers
+    dns_check_result = []
+    dns_checks_success = True
+
+    for server in dns_servers:
+        resolver.nameservers = [server]
+        try:
+            answer = resolver.resolve(host, "A")
+        except Exception as e:
+            dns_checks_success = False
+            dns_check_result.append([server, e.msg]) 
+        else:
+            if type(answer) == dns.resolver.Answer:
+                dns_check_result.append([server, True])
+
+    return ["DNS Server Status", getDateNow(), dns_checks_success, "DNS server response " + dns_check_result]
+
+def checkDefaultGateway():
+    gateways = netifaces.gateways()
+    default_gateway = gateways['default'][netifaces.AF_INET][0]
+
+    pingReturn = ping(default_gateway, unit='ms'), 2
+
+    if isinstance(pingReturn, (int, float, complex)):
+        pingSuccess = True
+    else:
+        pingSuccess = False
+        pingReturn = 0
+
+    return ["Gateway Status", getDateNow(), pingSuccess, "Gateway response " + round(pingReturn)]
+
+def checkLocalInterface(which_interface):
+    # Is this interface up?
+    interfaces = psutil.net_if_stats()
+    interface = interfaces[which_interface]
+
+    return ["Interface Status", getDateNow(), interface.isup, "Network interface" + which_interface + " is up? " + str(interface.isup)]
+    
 def checkConnection(hosts):
     failedHosts = 0
     returnDict = []
@@ -85,6 +125,7 @@ def traceroute(hostname):
     return tracedHosts
 
 def ping3host(hostname):
+    # https://pypi.org/project/ping3/
     try:
         result = ping(hostname)
     except:
@@ -122,7 +163,7 @@ def runSpeedtest():
     logger.debug("Starting speedtest")
     speedtestserverid = get_configValue('speedtestserverid')
 
-    st = speedtest.Speedtest()
+    st = speedtest.Speedtest(secure=1)
     speedtestServer = ""
 
     if speedtestserverid == 'Any':

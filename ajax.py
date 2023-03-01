@@ -1,5 +1,5 @@
 from flask import jsonify
-from lib.network import runSpeedtest
+from lib.network import runSpeedtest, checkDefaultGateway
 from lib.datastore import storeMonitorValue
 import redis, speedtest
 import logging, config as config
@@ -36,3 +36,9 @@ def ajaxListSpeedtestServers():
     returnResult = jsonify(serverResult)
     
     return returnResult
+
+
+def ajaxTest():
+    isLocalInterfaceUp = checkDefaultGateway()
+
+    return jsonify(isLocalInterfaceUp)

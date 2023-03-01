@@ -1,10 +1,9 @@
-import redis, logging, math, config as config
+import redis, logging, uuid, config as config
 
-from lib.network import traceroute, runSpeedtest, checkConnection
+from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers
 from config import set_configValue, get_configValue
-from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue
+from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue, getDateNow
 from datetime import date, datetime
-from flask import Flask
 
 # Constants and config
 eventID = ""
@@ -64,31 +63,39 @@ def scheduledCheckConnection():
         # We are OFFLINE
         # Were we previously offline?
         if redis_conn.get('currentstate') == 'offline':
+            # We are STILL OFFLINE
+
             event = getEvent(redis_conn.get('eventdate') + "-" + redis_conn.get('eventid'))
             logger.error("We are still offline:Internet connection down since " + event["offlinetimedate"])
         else:
-            # Change state to offline
+            # We just WENT OFFLINE
             redis_conn.set('currentstate', 'offline')
 
-            # Why are we offline?
-
+            # Create a dict to store all the information about the event.
+            eventDict = {}
+            eventDict['id'] = str(uuid.uuid4())
+            eventDict['currentState'] = "offline"
+            eventDict['reason'] = 'Unknown'
+            eventDict['offline_timedate'] = getDateNow()
+            eventDict['checks'] = []
+            
             # Is the local interface working?
-                # https://psutil.readthedocs.io/en/latest/#
-                # Call psutil.net_connections and examine interface state.
-
-                
+            defaultInterface = redis_conn.get('defaultinterface')
+            eventDict['checks'].append(checkLocalInterface(defaultInterface))
 
             # Check immediate gateway. Ping default route.
-            
+            eventDict['checks'].append(checkDefaultGateway())
+
             # Is DNS resolving?
+            for host in hosts:
+                eventDict['checks'].append(checkDNSServers(host))
+             
+            # Check the hop directly after our gateway. Is it working?
+            eventDict['tracedHosts'] = traceroute(traceTargetHost)
 
-
-
-            # Traceroute to determine what might be failing.
-            tracedHosts = traceroute(traceTargetHost)
-            logger.error("Connection test failed:Traced hosts " + str(tracedHosts))
+            logger.error("Connection test failed:Traced hosts " + str(eventDict['tracedHosts']))
 
             # Store data
-            eventID = createEvent("offline", tracedHosts)
-            redis_conn.set('eventid', eventID)
-            redis_conn.set('eventdate', str(date.today()))        
+            createEvent(eventDict)
+            redis_conn.set('eventid', eventDict['id'])
+            redis_conn.set('eventdate', eventDict['offline_timedate'])   
