@@ -14,6 +14,8 @@ TODO
 - Add list of network devices used for internet and include in outage check
     - DNS, router, firewall etc
     - Goal is to be able to determine why the internet is not available. Is your router down? DNS failure?
+    - Tools
+        - https://psutil.readthedocs.io/en/latest/
 - Make speedtest an AJAX request
     - Have the UX show a wait while the request is processed.
     https://subscription.packtpub.com/book/web-development/9781783983407/4/ch04lvl1sec36/dealing-with-xhr-requests

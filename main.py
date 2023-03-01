@@ -14,6 +14,10 @@ traceTargetHost = "8.8.8.8"
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
 
+def scheduledCheckNetworkConfig():
+    # Examine the current setup of the network and log changes.
+    pass
+
 def scheduledSpeedTest():
     redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
     if redis_conn.get('isspeedtestrunning') == "no":
@@ -30,11 +34,11 @@ def scheduledCheckConnection():
 
     hosts = get_configValue("hosts")
     logger.debug("Attempting to reach " + str(hosts))
-    # Check connection.
     redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
-    
-    checkResult = checkConnection(hosts)
 
+    # Check connection.
+    checkResult = checkConnection(hosts)
+    
     if checkResult[0] == 'Success' or checkResult[0] == 'Partial':
         # We are ONLINE
         logger.info("Connection test " + checkResult[0] + " : Pinged hosts " + str(hosts))
@@ -65,6 +69,20 @@ def scheduledCheckConnection():
         else:
             # Change state to offline
             redis_conn.set('currentstate', 'offline')
+
+            # Why are we offline?
+
+            # Is the local interface working?
+                # https://psutil.readthedocs.io/en/latest/#
+                # Call psutil.net_connections and examine interface state.
+
+                
+
+            # Check immediate gateway. Ping default route.
+            
+            # Is DNS resolving?
+
+
 
             # Traceroute to determine what might be failing.
             tracedHosts = traceroute(traceTargetHost)

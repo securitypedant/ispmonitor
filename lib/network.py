@@ -115,6 +115,7 @@ def pinghost(hostname):
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
+    # 18531 - Wave in San Francisco, CA
 
     redis_conn.set('isspeedtestrunning', 'yes')
 
