@@ -57,9 +57,13 @@
       <div class="col-sm">
         <h4>Logs</h4>
         <ul class="list-group">
+          {% if logfiles %}
             {% for logfile in logfiles %}
             <li class="list-group-item d-flex"><a href="{{ url_for('log', logid=logfile) }}">{{ logfile }}</a></li>
             {% endfor %}
+          {% else %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">None</li>
+          {% endif %}
         </ul>
       </div>
     </div>

@@ -5,4 +5,4 @@ hosts:
 pollfreq: 10
 speedtestfreq: 60
 speedtestserverid: Any
-defaultinterface: en0
+defaultinterface: Ethernet

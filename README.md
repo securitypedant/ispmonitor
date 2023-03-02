@@ -4,6 +4,7 @@ This is a work in progress project. The final version will be a fully hostable I
 
 TODO
 - Add exception catching to all external calls, i.e. Speedtests.
+- Allow a Notes field on an event.
 - Move as much config data into redis, avoiding file reads.
 - In config, switch for enable/pause/disable scheduled jobs.
 - Check if redis server is running and fail gracefully.

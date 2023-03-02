@@ -1,4 +1,4 @@
-import ajax, redis, pathlib
+import ajax, redis, pathlib, sys
 import os, yaml, plotly, json, datetime
 import logging, config as config
 import logging.handlers as handlers
@@ -27,11 +27,12 @@ redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=Tru
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
 
-
 scheduler = BackgroundScheduler()
 scheduler.start()
-scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-#scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+jobCheckConnection = scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
+#jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+
+redis_conn.set('jobIDCheckConnection', jobCheckConnection.id)
 
 @app.before_first_request
 def appStartup():
@@ -88,9 +89,9 @@ def lastcheckdate():
 
 def createEventDict(file):
     with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / file, 'r') as event:
-        eventdict = eval(event.read())
+        eventdict = json.load(event)
         eventdict['filename'] = file
-        eventdict['downtimeformatted'] = str(eventdict['downtime']).split('.')[0]
+        eventdict['downtimeformatted'] = str(eventdict['total_downtime']).split('.')[0]
     return eventdict
 
 # ------------------ ROUTES  ------------------ 

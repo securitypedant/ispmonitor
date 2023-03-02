@@ -3,7 +3,7 @@ import speedtest, logging, psutil
 from ping3 import ping
 import redis, netifaces, dns.resolver
 from config import get_configValue
-from datastore import getDateNow
+from lib.datastore import getDateNow
 
 logger = logging.getLogger(config.loggerName)
 redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
@@ -27,7 +27,7 @@ def checkDNSServers(host):
             if type(answer) == dns.resolver.Answer:
                 dns_check_result.append([server, True])
 
-    return ["DNS Server Status", getDateNow(), dns_checks_success, "DNS server response " + dns_check_result]
+    return ["DNS Server Status", getDateNow(), dns_checks_success, "DNS server response " + str(dns_check_result)]
 
 def checkDefaultGateway():
     gateways = netifaces.gateways()
@@ -41,14 +41,14 @@ def checkDefaultGateway():
         pingSuccess = False
         pingReturn = 0
 
-    return ["Gateway Status", getDateNow(), pingSuccess, "Gateway response " + round(pingReturn)]
+    return ["Gateway Status", getDateNow(), pingSuccess, "Gateway response " + str(round(pingReturn))]
 
 def checkLocalInterface(which_interface):
     # Is this interface up?
     interfaces = psutil.net_if_stats()
     interface = interfaces[which_interface]
 
-    return ["Interface Status", getDateNow(), interface.isup, "Network interface" + which_interface + " is up? " + str(interface.isup)]
+    return ["Interface Status", getDateNow(), interface.isup, "Network interface '" + which_interface + "' is up? " + str(interface.isup)]
     
 def checkConnection(hosts):
     failedHosts = 0
@@ -122,7 +122,7 @@ def traceroute(hostname):
                     tracedHosts.append(host[0])
                     logger.debug("Traceroute found host:" + host[0])
     
-    return tracedHosts
+    return ["Traceroute", getDateNow(), True, tracedHosts]
 
 def ping3host(hostname):
     # https://pypi.org/project/ping3/

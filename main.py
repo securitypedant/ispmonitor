@@ -1,9 +1,9 @@
-import redis, logging, uuid, config as config
+import redis, logging, sys, uuid, config as config
 
 from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers
 from config import set_configValue, get_configValue
-from lib.datastore import createEvent, updateEvent, monitorEvent, getEvent, storeMonitorValue, getDateNow
-from datetime import date, datetime
+from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow
+from datetime import datetime
 
 # Constants and config
 eventID = ""
@@ -52,21 +52,21 @@ def scheduledCheckConnection():
             
             # Run speedtest
             speedTest = runSpeedtest()
-            event = monitorEvent(redis_conn.get('eventid'))
-            event.onlineping = speedTest.results.ping
-            event.downspeed = speedTest.results.download
-            event.upspeed = speedTest.results.upload
+            udpateEvent = {}
+            udpateEvent['onlineping'] = speedTest.results.ping
+            udpateEvent['downspeed'] = speedTest.results.download
+            udpateEvent['upspeed'] = speedTest.results.upload
+            udpateEvent['currentState'] = "online"
 
             # Update event
-            updateEvent(str(redis_conn.get('eventdate')) + "-" + redis_conn.get('eventid'), event)
+            updateEvent(redis_conn.get('last_eventid'), udpateEvent)
     else:
         # We are OFFLINE
         # Were we previously offline?
         if redis_conn.get('currentstate') == 'offline':
             # We are STILL OFFLINE
-
-            event = getEvent(redis_conn.get('eventdate') + "-" + redis_conn.get('eventid'))
-            logger.error("We are still offline:Internet connection down since " + event["offlinetimedate"])
+            #event = getEvent(redis_conn.get('last_eventdate') + "-" + redis_conn.get('last_eventid'))
+            logger.error("We are still offline:Internet connection down")
         else:
             # We just WENT OFFLINE
             redis_conn.set('currentstate', 'offline')
@@ -91,11 +91,11 @@ def scheduledCheckConnection():
                 eventDict['checks'].append(checkDNSServers(host))
              
             # Check the hop directly after our gateway. Is it working?
-            eventDict['tracedHosts'] = traceroute(traceTargetHost)
+            eventDict['checks'].append(traceroute(traceTargetHost))
 
-            logger.error("Connection test failed:Traced hosts " + str(eventDict['tracedHosts']))
+            logger.error("Connection test failed")
 
             # Store data
             createEvent(eventDict)
-            redis_conn.set('eventid', eventDict['id'])
-            redis_conn.set('eventdate', eventDict['offline_timedate'])   
+            redis_conn.set('last_eventid', eventDict['id'])
+            redis_conn.set('last_eventdate', eventDict['offline_timedate'])   

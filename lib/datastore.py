@@ -19,8 +19,8 @@ def getDateNow():
 def createEvent(eventDict):
     
     logger.debug(json.dumps(encoder().encode(eventDict)))
-    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(filename), 'w') as file:
-        json_content = json.dumps(content.__dict__)
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / eventDict['id'], 'w') as file:
+        json_content = json.dumps(eventDict)
         file.write(json_content)
 
     return
@@ -39,20 +39,21 @@ def updateEvent(filename, event):
         # Reading from json file
         json_object = json.load(json_file)
         
-    json_object["onlineping"] = event.onlineping
-    json_object["downspeed"] = event.downspeed
-    json_object["upspeed"] = event.upspeed
-    json_object["onlinetimedate"] = getDateNow()
+    json_object['onlineping'] = event['onlineping']
+    json_object['downspeed'] = event['downspeed']
+    json_object['upspeed'] = event['upspeed']
+    json_object['online_timedate'] = getDateNow()
 
     # Figure out downtime
-    offlineStart = datetime.strptime(json_object["offlinetimedate"], "%Y-%m-%d %H:%M:%S")
+    offlineStart = datetime.strptime(json_object["offline_timedate"], "%Y-%m-%d %H:%M:%S")
 
     downtime = datetime.now() - offlineStart
     downtimeSeconds = downtime.total_seconds()
-    json_object["downtime"] = downtimeSeconds
+    json_object["total_downtime"] = downtimeSeconds
 
     with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(filename), 'w') as file:
-        file.write(str(json_object))
+        json_towrite = json.dumps(json_object)
+        file.write(str(json_towrite))
 
 def storeMonitorValue(type, value):
     # Check if data folder exists, if not, create it.
