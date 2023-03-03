@@ -1,0 +1,105 @@
+import json, plotly
+import plotly.express as px
+import pandas as pd
+from lib.datastore import readMonitorValues 
+from lib.redis_server import getRedisConn
+from datetime import datetime, timedelta
+
+redis_conn = getRedisConn()
+
+def getLatencyGraphData(timeFrame):
+    graphData = getGraphData(timeFrame, 'pingResult', "Connection latency", "Latency in ms", "Hosts: ")
+
+    return graphData
+
+def getSpeedtestGraphData(timeFrame):
+    graphData = getGraphData(timeFrame, 'speedtestResult', "Connection speed", "Speed in Mbps", "Bandwidth: ")
+
+    return graphData
+
+def setRangeFromTimeframe(timeFrame):
+    # Accept a timeframe as a keyword, then convert to a list of start and end times.
+    # In the format, ["2023-03-01 00:00:00", "2023-03-01 23:59:59"]
+
+    listRange = []
+
+    if timeFrame == 'day':
+        today = datetime.now()
+        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
+        listRange.append(today.strftime(redis_conn.get('datetimeformat')))
+    elif timeFrame == 'week':
+        today = datetime.now() - timedelta(days=7)
+        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
+        listRange.append(datetime.now().strftime(redis_conn.get('datetimeformat')))
+    elif timeFrame == 'month':
+        today = datetime.now() - timedelta(weeks=4)
+        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
+        listRange.append(datetime.now().strftime(redis_conn.get('datetimeformat')))
+    else:
+        pass
+
+    return listRange
+
+def getGraphData(timeFrame, type, title, yaxis_title, legend_title):
+    graphData = readMonitorValues(type)
+
+    if graphData:
+        xRef = ""
+
+        timeRange = setRangeFromTimeframe(timeFrame)
+
+        newgraphData = {}
+        newgraphData['datetime'] = []
+
+        if type == 'pingResult':
+            xRef = "datetime"
+
+            for item in graphData:
+                for key, value in item.items():
+                    newgraphData['datetime'].append(key)
+                    for latency in value:
+                        if latency[0] not in newgraphData:
+                            newgraphData[latency[0]] = []
+                        newgraphData[latency[0]].append(latency[1])
+
+            dataFrame = pd.DataFrame(newgraphData)
+
+            hostsList = []
+            for key, value in newgraphData.items():
+                if key != 'datetime':
+                    hostsList.append(key)
+            yRange = hostsList
+        else:
+            yRange = ['Download','Upload']
+            xRef = 'datetime'
+
+            stxVals = []
+            stDownyVals = []
+            stUpyVals = []
+
+            for speedTestDict in graphData:
+                key = list(speedTestDict.keys())
+                value = speedTestDict[key[0]]
+                stxVals.append(key[0])
+                stDownyVals.append(int(value[0]))
+                stUpyVals.append(int(value[1]))
+
+            dataFrame = pd.DataFrame({'datetime':stxVals,'Download':stDownyVals,'Upload':stUpyVals})
+
+        fig = px.line(dataFrame, x=xRef, y=yRange, title=title, range_x=timeRange)
+
+        fig.update_layout(
+            title=title,
+            yaxis_title=yaxis_title,
+            xaxis_title="Date / Time",
+            legend=dict(x=0, y=1.15, orientation='h'),        
+            legend_title=legend_title
+        )
+
+        # Create graphJSON
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    else:
+        graphJSON = {0:0}
+    return graphJSON
+
+

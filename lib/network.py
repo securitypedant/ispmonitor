@@ -1,12 +1,14 @@
-import subprocess, logging, config as config
+import subprocess, logging, json, config as config
 import speedtest, logging, psutil
 from ping3 import ping
 import redis, netifaces, dns.resolver
 from config import get_configValue
 from lib.datastore import getDateNow
+from lib.redis_server import getRedisConn
 
 logger = logging.getLogger(config.loggerName)
-redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
+redis_conn = getRedisConn()    
 
 def checkDNSServers(host):
     # https://dnspython.readthedocs.io/en/stable/index.html
@@ -174,13 +176,14 @@ def runSpeedtest():
         speedtestServer = st.get_servers(servers)
 
     ping = st.results.ping
-    download = st.download()
-    upload = st.upload()
+    download = round(st.download() / 1000 / 1000, 2)
+    upload = round(st.upload() / 1000 / 1000, 2)
     server = st.results.server["sponsor"] + " - " + st.results.server["name"]
 
     logger.debug("Speedtest using: " + server)
 
     result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
+    redis_conn.set('lastspeedtest', json.dumps({"ping":ping, "download": download, "upload": upload, "server":server}))
     logger.debug("Speedtest results: " + result)
 
     redis_conn.set('isspeedtestrunning', 'no')

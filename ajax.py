@@ -1,13 +1,22 @@
-from flask import jsonify
+from flask import jsonify, request
 from lib.network import runSpeedtest, checkDefaultGateway
 from lib.datastore import storeMonitorValue
+from lib.graphs import getLatencyGraphData
 import redis, speedtest
 import logging, config as config
+from lib.redis_server import getRedisConn
 
 logger = logging.getLogger(config.loggerName)
 
+def getGraphData():
+    dropdown_value = request.args.get('dropdownValue')
+
+    updated_data = getLatencyGraphData(dropdown_value)
+
+    return updated_data
+
 def ajaxspeedtest():
-    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no":
         speedTestResults = runSpeedtest()
         

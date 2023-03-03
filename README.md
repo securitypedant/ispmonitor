@@ -3,9 +3,12 @@
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
 TODO
+- Button to create speedtest report.
+    - As a PDF
+    - With a graph and speed test history
+    - Allow week/month reports.
 - Add exception catching to all external calls, i.e. Speedtests.
 - Allow a Notes field on an event.
-- Move as much config data into redis, avoiding file reads.
 - In config, switch for enable/pause/disable scheduled jobs.
 - Check if redis server is running and fail gracefully.
 - Improve monitor ping to average out the hosts latency. Maybe store all the real values, but when graphing, build an average.

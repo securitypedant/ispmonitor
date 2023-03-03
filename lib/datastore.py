@@ -1,12 +1,11 @@
-import uuid, logging, config as config, json, os, logging
+import logging, config as config, json
 from json import JSONEncoder
-from datetime import datetime, date
-import json, os, redis, pathlib
-from config import get_configValue
-from flask import g
+from datetime import datetime
+import json, pathlib
+from lib.redis_server import getRedisConn
 
 logger = logging.getLogger(config.loggerName)
-redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_conn = getRedisConn()
 
 class encoder(JSONEncoder):
     def default(self, o):
@@ -54,7 +53,14 @@ def updateEvent(filename, event):
     with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(filename), 'w') as file:
         json_towrite = json.dumps(json_object)
         file.write(str(json_towrite))
-
+        
+def createEventDict(file):
+    with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / file, 'r') as event:
+        eventdict = json.load(event)
+        eventdict['filename'] = file
+        eventdict['downtimeformatted'] = str(eventdict['total_downtime']).split('.')[0]
+    return eventdict
+        
 def storeMonitorValue(type, value):
     # Check if data folder exists, if not, create it.
     dictItem = {getDateNow():value}
@@ -65,16 +71,21 @@ def storeMonitorValue(type, value):
 
 def readMonitorValues(type):
     type = type + '.json'
-    with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type) as file:
-        dictOfValues = [json.loads(line) for line in file]
-    return dictOfValues
+    try:
+        with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type) as file:
+            dictOfValues = [json.loads(line) for line in file]
+    except Exception as e:
+        return False
+    else:
+        return dictOfValues
 
 def getLastSpeedTest():
     try:
-        with open(pathlib.Path(redis_conn.get('graphdatafolder')) / 'speedTestResult.json') as file:
-            for line in file:
-                pass
-            dictLastCheck = json.loads(line)
+        dictLastCheck = json.loads(redis_conn.get('lastspeedtest'))
+        #with open(pathlib.Path(redis_conn.get('graphdatafolder')) / 'speedTestResult.json') as file:
+        #    for line in file:
+        #        pass
+        #    dictLastCheck = json.loads(line)
         return dictLastCheck
     except:
         return {0:0}

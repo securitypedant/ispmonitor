@@ -1,9 +1,9 @@
-import redis, logging, sys, uuid, config as config
-
+import logging, uuid, config as config
 from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers
 from config import set_configValue, get_configValue
 from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow
 from datetime import datetime
+from lib.redis_server import getRedisConn
 
 # Constants and config
 eventID = ""
@@ -18,7 +18,7 @@ def scheduledCheckNetworkConfig():
     pass
 
 def scheduledSpeedTest():
-    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no":
         logger.debug("Running speed test")
         speedTestResults = runSpeedtest()
@@ -29,7 +29,7 @@ def scheduledSpeedTest():
         logger.warning("Scheduler attempted to run speedtest job, but it was already running.")
 
 def scheduledCheckConnection():
-    redis_conn = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    redis_conn = getRedisConn()
 
     hosts = get_configValue("hosts")
     logger.debug("Attempting to reach " + str(hosts))
