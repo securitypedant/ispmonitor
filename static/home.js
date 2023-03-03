@@ -5,8 +5,12 @@ window.onload=function(){
       xhr.onload = function() {
         var result = JSON.parse(xhr.responseText);
         document.getElementById('speedtest_result').innerHTML = result;
+        document.getElementById('speedtest_button').textContent = "Run Speedtest";
+        document.getElementById('speedtest_button').disabled = false;
       };
       xhr.send();
+      document.getElementById('speedtest_button').disabled = true;
+      document.getElementById('speedtest_button').textContent = "Speedtest Running...";
     });
     document.getElementById('test_button').addEventListener('click', function() {
       var xhr = new XMLHttpRequest();

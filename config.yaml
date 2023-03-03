@@ -6,3 +6,4 @@ pollfreq: 10
 speedtestfreq: 60
 speedtestserverid: Any
 defaultinterface: Ethernet
+tracetargethost: 8.8.8.8

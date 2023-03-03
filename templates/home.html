@@ -7,11 +7,12 @@
     <button type="submit" name="test_button" id="test_button">Test</button>&nbsp;<div id="test_result">Test results</div>
   </div>
     <div class="row">
-        <button type="submit" name="speedtest_button" id="speedtest_button">Speedtest Now</button>&nbsp;<div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
+        <button type="submit" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;<div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
     </div>
     <div class="row p-2">
       <div class="col-sm">
         <select id="latencyrange">
+          <option value="hour">Hour</option>
           <option value="day">Day</option>
           <option value="week">Week</option>
           <option value="month">Month</option>

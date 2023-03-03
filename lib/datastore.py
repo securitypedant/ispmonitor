@@ -1,4 +1,4 @@
-import logging, config as config, json
+import logging, config as config, json, glob, os
 from json import JSONEncoder
 from datetime import datetime
 import json, pathlib
@@ -11,7 +11,7 @@ class encoder(JSONEncoder):
     def default(self, o):
             return o.__dict__
 
-def getDateNow():
+def getDateNow() -> str:
     timenow = datetime.now()
     return timenow.strftime(redis_conn.get('datetimeformat'))
 
@@ -62,22 +62,32 @@ def createEventDict(file):
     return eventdict
         
 def storeMonitorValue(type, value):
-    # Check if data folder exists, if not, create it.
+    now = datetime.now()
     dictItem = {getDateNow():value}
-    type = type + '.json'
-    with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type, 'a') as file:
+
+    filename = str(now.date()) + "-" + type + '.json'
+    with open(pathlib.Path(redis_conn.get('graphdatafolder')) / filename, 'a') as file:
         json.dump(dictItem, file)
         file.write("\n")
 
-def readMonitorValues(type):
-    type = type + '.json'
-    try:
-        with open(pathlib.Path(redis_conn.get('graphdatafolder')) / type) as file:
-            dictOfValues = [json.loads(line) for line in file]
-    except Exception as e:
-        return False
+def readMonitorValues(type, range='hour'):
+    if range == 'hour' or range == 'day':
+        fileRange = str(datetime.now().date())
     else:
-        return dictOfValues
+        fileRange = str(datetime.now().year) + "-" + datetime.now().strftime('%m')
+
+    file_pattern = os.path.join(redis_conn.get('graphdatafolder') + '/' + fileRange + '*' + type + '.json')
+    files = glob.glob(file_pattern)
+
+    listOfValues = []
+
+    for filename in files:
+        with open(filename, 'r') as file:
+            print("Processing file " + filename)
+            for line in file:
+                listOfValues.append(json.loads(line))
+
+    return listOfValues
 
 def getLastSpeedTest():
     try:

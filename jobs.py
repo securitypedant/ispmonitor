@@ -1,14 +1,9 @@
 import logging, uuid, config as config
 from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers
-from config import set_configValue, get_configValue
+from config import get_configValue
 from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow
 from datetime import datetime
 from lib.redis_server import getRedisConn
-
-# Constants and config
-eventID = ""
-eventDate = ""
-traceTargetHost = "8.8.8.8"
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
@@ -91,7 +86,7 @@ def scheduledCheckConnection():
                 eventDict['checks'].append(checkDNSServers(host))
              
             # Check the hop directly after our gateway. Is it working?
-            eventDict['checks'].append(traceroute(traceTargetHost))
+            eventDict['checks'].append(traceroute(redis_conn.get('traceTargetHost')))
 
             logger.error("Connection test failed")
 

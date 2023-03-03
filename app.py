@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, redirect, url_for, g
 from lib.datastore import readMonitorValues, getLastSpeedTest, createEventDict
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue, set_configValue
-from main import scheduledCheckConnection, scheduledSpeedTest
+from jobs import scheduledCheckConnection, scheduledSpeedTest
 from lib.redis_server import getRedisConn
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 
@@ -47,15 +47,6 @@ def appStartup():
     if not os.path.exists("graphdata"):
         os.makedirs("graphdata")
 
-    # Create data files if they don't exist.
-    if not os.path.isfile('graphdata/speedtestResult.json'):
-        with open('graphdata/speedtestResult.json', 'w'):
-            pass
-
-    if not os.path.isfile('graphdata/pingResult.json'):
-        with open('graphdata/pingResult.json', 'w'):
-            pass
-
     redis_conn.set('isspeedtestrunning', 'no')
     redis_conn.set('currentstate', 'online')
     redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
@@ -64,6 +55,7 @@ def appStartup():
     
     redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
     redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
+    redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
 
     loggingLevel = logging.DEBUG
     logger.setLevel(loggingLevel)
@@ -118,8 +110,8 @@ def render_home():
         events.append(createEventDict(file))
     
     # Create graphJSON data
-    ltgraphJSON = getLatencyGraphData('day')
-    stgraphJSON= getSpeedtestGraphData('day')
+    ltgraphJSON = getLatencyGraphData('hour')
+    stgraphJSON= getSpeedtestGraphData('hour')
     lastSpeedTest = getLastSpeedTest()
 
     return render_template(

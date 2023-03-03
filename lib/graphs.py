@@ -19,29 +19,34 @@ def getSpeedtestGraphData(timeFrame):
 
 def setRangeFromTimeframe(timeFrame):
     # Accept a timeframe as a keyword, then convert to a list of start and end times.
+    # Range is [start_date, end_date]
     # In the format, ["2023-03-01 00:00:00", "2023-03-01 23:59:59"]
 
     listRange = []
 
-    if timeFrame == 'day':
-        today = datetime.now()
-        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
+    if timeFrame == 'hour':
+        today = datetime.now() - timedelta(hours=1)
+        listRange.append(datetime.now().strftime(redis_conn.get('datetimeformat')))
         listRange.append(today.strftime(redis_conn.get('datetimeformat')))
+    elif timeFrame == 'day':
+        today = datetime.now()
+        listRange.append(today.strftime(redis_conn.get('datetimeformat')))
+        listRange.append(str(today.date())+ " 00:00:00")
     elif timeFrame == 'week':
         today = datetime.now() - timedelta(days=7)
-        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
         listRange.append(datetime.now().strftime(redis_conn.get('datetimeformat')))
+        listRange.append(str(today.date())+ " 00:00:00")
     elif timeFrame == 'month':
         today = datetime.now() - timedelta(weeks=4)
-        listRange.append(str(today.year) + "-" + str(today.month) + "-" + str(today.day)+ " 00:00:00")
         listRange.append(datetime.now().strftime(redis_conn.get('datetimeformat')))
+        listRange.append(str(today.date()   )+ " 00:00:00")
     else:
         pass
 
     return listRange
 
 def getGraphData(timeFrame, type, title, yaxis_title, legend_title):
-    graphData = readMonitorValues(type)
+    graphData = readMonitorValues(type, timeFrame)
 
     if graphData:
         xRef = ""

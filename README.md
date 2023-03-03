@@ -3,31 +3,33 @@
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
 TODO
-- Button to create speedtest report.
-    - As a PDF
-    - With a graph and speed test history
-    - Allow week/month reports.
+Version 1.0 Release
+- Improve overall UX
+- Test all scenarios
 - Add exception catching to all external calls, i.e. Speedtests.
-- Allow a Notes field on an event.
 - In config, switch for enable/pause/disable scheduled jobs.
-- Check if redis server is running and fail gracefully.
-- Improve monitor ping to average out the hosts latency. Maybe store all the real values, but when graphing, build an average.
 - Show in UX what the server is currently doing. i.e. speed test, checking internet, etc
     - https://www.velotio.com/engineering-blog/how-to-implement-server-sent-events-using-python-flask-and-react
     - https://github.com/singingwolfboy/flask-sse
-- Setup Redis
-    - Secure with username/pass and store securely in Flask
 - Add list of network devices used for internet and include in outage check
     - DNS, router, firewall etc
     - Goal is to be able to determine why the internet is not available. Is your router down? DNS failure?
     - Tools
         - https://psutil.readthedocs.io/en/latest/
-- Make speedtest an AJAX request
-    - Have the UX show a wait while the request is processed.
-    https://subscription.packtpub.com/book/web-development/9781783983407/4/ch04lvl1sec36/dealing-with-xhr-requests
-    https://javascript.plainenglish.io/how-to-form-submissions-with-flask-and-ajax-dfde9891c620
 - Improve logic for detecting an outage.
     - Possible a speedtest is blocking the scheduler.
+
+Future release
+- Button to create speedtest report.
+    - As a PDF
+    - With a graph and speed test history
+    - Allow week/month reports.
+
+- Allow a Notes field on an event.
+- Check if redis server is running and fail gracefully.
+- Improve monitor ping to average out the hosts latency. Maybe store all the real values, but when graphing, build an average.
+- Setup Redis
+    - Secure with username/pass and store securely in Flask
 - Improve logging
     - Sort logs on homepage by date
     - Improve the log.html view
