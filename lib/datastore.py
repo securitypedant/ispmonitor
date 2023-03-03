@@ -83,7 +83,6 @@ def readMonitorValues(type, range='hour'):
 
     for filename in files:
         with open(filename, 'r') as file:
-            print("Processing file " + filename)
             for line in file:
                 listOfValues.append(json.loads(line))
 

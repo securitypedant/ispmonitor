@@ -51,7 +51,11 @@ def checkLocalInterface(which_interface):
     interface = interfaces[which_interface]
 
     return ["Interface Status", getDateNow(), interface.isup, "Network interface '" + which_interface + "' is up? " + str(interface.isup)]
-    
+
+def getLocalInterfaces():
+    # Return a list of local interface details in a list.
+    return psutil.net_if_stats()
+
 def checkConnection(hosts):
     failedHosts = 0
     returnDict = []

@@ -11,23 +11,16 @@
 
         // Get a reference to the HTML element where you want to display the data
         const container = document.getElementById("speedtestserverlist_result");
-
         // Clear the contents of the container (optional)
         container.innerHTML = "";
-
         result.forEach(function(value) {
           // Create a new HTML element to display the value
           const element = document.createElement("div");
-        
           // Set the text content of the element to the value
           element.textContent = "ID=" + value[0].id + " - " + value[0].sponsor + " in " + value[0].name;
-        
           // Add the new element to the container
           container.appendChild(element);
         });
-
-
-        // document.getElementById('speedtestserverlist_result').innerHTML = result;
       };
       xhr.send();
     });
@@ -82,6 +75,15 @@
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="speedtestserverid">Speed test server (ID)</label></div>
     <div class="col-auto"><input type="text" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
+  </div>
+  <div class="row">
+    Network Interfaces: Choose which to use for monitoring.
+    {% for key, value in interfaces.items() %}
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="interfaceRadioGroup" id="radioCheck1" value="Ethernet">
+      <label class="form-check-label" for="radioCheck1">{{ key }}</label>
+    </div> 
+    {% endfor %}
   </div>
 
   <input type="submit" value="Save">

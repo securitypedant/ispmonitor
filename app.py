@@ -5,6 +5,7 @@ import logging.handlers as handlers
 
 from flask import Flask, render_template, request, redirect, url_for, g
 from lib.datastore import readMonitorValues, getLastSpeedTest, createEventDict
+from lib.network import getLocalInterfaces
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import get_configValue, set_configValue
 from jobs import scheduledCheckConnection, scheduledSpeedTest
@@ -117,6 +118,7 @@ def render_home():
     return render_template(
         "home.html",
         events=events,
+        isSpeedTestRunning=redis_conn.get('isspeedtestrunning'),
         graphJSON=ltgraphJSON,
         stgraphJSON=stgraphJSON,
         lastSpeedTest=lastSpeedTest,
@@ -150,9 +152,11 @@ def config():
 
         set_configValue('hosts', hostsListClean)
 
+    interfaces = getLocalInterfaces()
+
     with open('config.yaml', 'r') as configfile:
         configdict = yaml.safe_load(configfile)
-    return render_template("config.html", configdict=configdict)
+    return render_template("config.html", configdict=configdict, interfaces=interfaces)
 
 if __name__ == "__main__":
     app.run()

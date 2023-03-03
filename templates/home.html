@@ -1,22 +1,28 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor{% endblock %}
 {% block content %}
+<script type="text/javascript">
+  var isSpeedTestRunning = false
+  if ('{{ isSpeedTestRunning }}' == 'yes') {
+    var isSpeedTestRunning = true
+  }
+</script>
 <script src="{{url_for('static', filename='home.js')}}"></script>
-<div class="container">
+<div class="container-fluid">
   <div class="row">
     <button type="submit" name="test_button" id="test_button">Test</button>&nbsp;<div id="test_result">Test results</div>
   </div>
     <div class="row">
         <button type="submit" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;<div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
     </div>
-    <div class="row p-2">
+    <div class="row">
       <div class="col-sm">
         <select id="latencyrange">
           <option value="hour">Hour</option>
           <option value="day">Day</option>
           <option value="week">Week</option>
           <option value="month">Month</option>
-      </select>
+        </select>
         <div id='latencychart' class='chart'”></div>
       </div>
       <div class="col-sm">

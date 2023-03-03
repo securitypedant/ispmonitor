@@ -1,4 +1,9 @@
 window.onload=function(){
+
+    if (isSpeedTestRunning) {
+      document.getElementById('speedtest_button').disabled = true;
+      document.getElementById('speedtest_button').textContent = "Speedtest Running...";
+    }
     document.getElementById('speedtest_button').addEventListener('click', function() {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/ajax/runspeedtest', true);
