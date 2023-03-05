@@ -71,26 +71,41 @@ def scheduledCheckConnection():
             eventDict['id'] = str(uuid.uuid4())
             eventDict['currentState'] = "offline"
             eventDict['reason'] = 'Unknown'
+            eventDict['total_downtime'] = 0
+            eventDict['downspeed'] = 0
+            eventDict['upspeed'] = 0
+            eventDict['onlineping'] = 0
             eventDict['offline_timedate'] = getDateNow()
             eventDict['checks'] = []
             
-            # Is the local interface working?
-            defaultInterface = redis_conn.get('defaultinterface')
-            eventDict['checks'].append(checkLocalInterface(defaultInterface))
+            try:
+                # Is the local interface working?
+                defaultInterface = redis_conn.get('defaultinterface')
+                eventDict['checks'].append(checkLocalInterface(defaultInterface))
 
-            # Check immediate gateway. Ping default route.
-            eventDict['checks'].append(checkDefaultGateway())
+                if eventDict['checks'][0][2] == False:
+                    eventDict['reason'] = "Network interface " + defaultInterface + " not up."
 
-            # Is DNS resolving?
-            for host in hosts:
-                eventDict['checks'].append(checkDNSServers(host))
-             
-            # Check the hop directly after our gateway. Is it working?
-            eventDict['checks'].append(traceroute(redis_conn.get('traceTargetHost')))
+                # Check immediate gateway. Ping default route.
+                eventDict['checks'].append(checkDefaultGateway())
 
-            logger.error("Connection test failed")
+                if eventDict['checks'][1][2] == False:
+                    eventDict['reason'] = eventDict['checks'][1][3]
 
-            # Store data
-            createEvent(eventDict)
-            redis_conn.set('last_eventid', eventDict['id'])
-            redis_conn.set('last_eventdate', eventDict['offline_timedate'])   
+                # Is DNS resolving?
+                for host in hosts:
+                    eventDict['checks'].append(checkDNSServers(host))
+                
+                # Check the hop directly after our gateway. Is it working?
+                eventDict['checks'].append(traceroute(redis_conn.get('traceTargetHost')))
+
+            except Exception as e:
+                eventDict['checks'].append(["Exception in check", getDateNow(), False, e.args])
+
+            finally:
+                logger.error("Connection test failed")
+
+                # Store data
+                createEvent(eventDict)
+                redis_conn.set('last_eventid', eventDict['id'])
+                redis_conn.set('last_eventdate', eventDict['offline_timedate'])   

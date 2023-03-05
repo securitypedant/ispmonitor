@@ -112,14 +112,14 @@ def render_home():
     
     # Create graphJSON data
     ltgraphJSON = getLatencyGraphData('hour')
-    stgraphJSON= getSpeedtestGraphData('hour')
+    stgraphJSON= getSpeedtestGraphData('week')
     lastSpeedTest = getLastSpeedTest()
 
     return render_template(
         "home.html",
         events=events,
         isSpeedTestRunning=redis_conn.get('isspeedtestrunning'),
-        graphJSON=ltgraphJSON,
+        ltgraphJSON=ltgraphJSON,
         stgraphJSON=stgraphJSON,
         lastSpeedTest=lastSpeedTest,
         logfiles=logfiles
@@ -146,6 +146,7 @@ def config():
         set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
         set_configValue('datetimeformat', request.form['datetimeformat'])
         set_configValue('speedtestserverid', request.form['speedtestserverid'])
+        set_configValue('defaultinterface', request.form['interfaceRadioGroup'])
         
         hostsList = request.form['hosts'].split('\r\n')
         hostsListClean = [item.strip() for item in hostsList]
@@ -156,6 +157,7 @@ def config():
 
     with open('config.yaml', 'r') as configfile:
         configdict = yaml.safe_load(configfile)
+
     return render_template("config.html", configdict=configdict, interfaces=interfaces)
 
 if __name__ == "__main__":

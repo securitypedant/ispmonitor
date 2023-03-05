@@ -29,21 +29,27 @@ def checkDNSServers(host):
             if type(answer) == dns.resolver.Answer:
                 dns_check_result.append([server, True])
 
-    return ["DNS Server Status", getDateNow(), dns_checks_success, "DNS server response " + str(dns_check_result)]
+    return ["DNS Server Status for " + host, getDateNow(), dns_checks_success, "DNS server response " + str(dns_check_result)]
 
 def checkDefaultGateway():
     gateways = netifaces.gateways()
-    default_gateway = gateways['default'][netifaces.AF_INET][0]
-
-    pingReturn = ping(default_gateway, unit='ms'), 2
-
-    if isinstance(pingReturn, (int, float, complex)):
-        pingSuccess = True
-    else:
+    if gateways['default'] == {}:
         pingSuccess = False
-        pingReturn = 0
+        returnMessage = "No default gateway"
+    else:
+        default_gateway = gateways['default'][netifaces.AF_INET][0]
 
-    return ["Gateway Status", getDateNow(), pingSuccess, "Gateway response " + str(round(pingReturn))]
+        pingReturn = ping(default_gateway, unit='ms')
+
+        if isinstance(pingReturn, (int, float, complex)):
+            pingSuccess = True
+        else:
+            pingSuccess = False
+            returnMessage = default_gateway + " didn't reply: " + pingReturn
+        
+        returnMessage = default_gateway + " response: " + str(round(pingReturn))
+
+    return ["Gateway Status", getDateNow(), pingSuccess, returnMessage]
 
 def checkLocalInterface(which_interface):
     # Is this interface up?
@@ -54,7 +60,8 @@ def checkLocalInterface(which_interface):
 
 def getLocalInterfaces():
     # Return a list of local interface details in a list.
-    return psutil.net_if_stats()
+    # return psutil.net_if_stats()
+    return psutil.net_if_addrs()
 
 def checkConnection(hosts):
     failedHosts = 0

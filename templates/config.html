@@ -28,6 +28,13 @@
   </script>
 <h5>Current configuration</h5>
 <form method="post" action="/config">
+    Which network interface should be used for monitoring?<br>
+    {% for key, value in interfaces.items() %}
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="interfaceRadioGroup" id="{{ key }}" value="{{ key }}" {% if configdict['defaultinterface'] == key %}checked{% endif %}>
+      <label class="form-check-label" for="radioCheck1">{{ key }}</label>
+    </div> 
+    {% endfor %}
   <div class="row">
     Connection check: 
     <div class="o-switch btn-group" data-toggle="buttons" role="group">
@@ -46,13 +53,13 @@
     Speedtest: 
     <div class="o-switch btn-group" data-toggle="buttons" role="group">
       <label class="btn btn-secondary active">
-        <input type="radio" name="options" id="option1" autocomplete="off" checked> Run
+        <input type="radio" name="speedtest_options" id="option1" autocomplete="off" checked> Run
       </label>
       <label class="btn btn-secondary">
-        <input type="radio" name="options" id="option2" autocomplete="off"> Pause
+        <input type="radio" name="speedtest_options" id="option2" autocomplete="off"> Pause
       </label>
       <label class="btn btn-secondary">
-        <input type="radio" name="options" id="option3" autocomplete="off"> Stop
+        <input type="radio" name="speedtest_options" id="option3" autocomplete="off"> Stop
       </label>
     </div>  
   </div>
@@ -75,15 +82,6 @@
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="speedtestserverid">Speed test server (ID)</label></div>
     <div class="col-auto"><input type="text" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
-  </div>
-  <div class="row">
-    Network Interfaces: Choose which to use for monitoring.
-    {% for key, value in interfaces.items() %}
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="interfaceRadioGroup" id="radioCheck1" value="Ethernet">
-      <label class="form-check-label" for="radioCheck1">{{ key }}</label>
-    </div> 
-    {% endfor %}
   </div>
 
   <input type="submit" value="Save">

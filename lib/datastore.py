@@ -58,7 +58,9 @@ def createEventDict(file):
     with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / file, 'r') as event:
         eventdict = json.load(event)
         eventdict['filename'] = file
-        eventdict['downtimeformatted'] = str(eventdict['total_downtime']).split('.')[0]
+        if eventdict['currentState'] == 'online':
+            eventdict['downtimeformatted'] = str(eventdict['total_downtime']).split('.')[0]
+
     return eventdict
         
 def storeMonitorValue(type, value):

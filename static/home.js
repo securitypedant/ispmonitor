@@ -17,15 +17,6 @@ window.onload=function(){
       document.getElementById('speedtest_button').disabled = true;
       document.getElementById('speedtest_button').textContent = "Speedtest Running...";
     });
-    document.getElementById('test_button').addEventListener('click', function() {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', '/ajax/test', true);
-      xhr.onload = function() {
-        var result = JSON.parse(xhr.responseText);
-        document.getElementById('test_result').innerHTML = result;
-      };
-      xhr.send();
-    });
     var latencydropdown = document.getElementById('latencyrange');
     latencydropdown.addEventListener('change', function() {
         var xhr = new XMLHttpRequest();

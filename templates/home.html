@@ -8,62 +8,55 @@
   }
 </script>
 <script src="{{url_for('static', filename='home.js')}}"></script>
-<div class="container-fluid">
+<button type="submit" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;
+  <div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
   <div class="row">
-    <button type="submit" name="test_button" id="test_button">Test</button>&nbsp;<div id="test_result">Test results</div>
+    <div class="col">
+      <select id="latencyrange">
+        <option value="hour">Hour</option>
+        <option value="day">Day</option>
+        <option value="week">Week</option>
+        <option value="month">Month</option>
+      </select>
+      <div id='latencychart' class='chart'”></div>
+    </div>
+    <div class="col">
+      <div id='speedchart' class='chart'”></div>
+    </div>
   </div>
-    <div class="row">
-        <button type="submit" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;<div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
-    </div>
-    <div class="row">
-      <div class="col-sm">
-        <select id="latencyrange">
-          <option value="hour">Hour</option>
-          <option value="day">Day</option>
-          <option value="week">Week</option>
-          <option value="month">Month</option>
-        </select>
-        <div id='latencychart' class='chart'”></div>
-      </div>
-      <div class="col-sm">
-        <div id='speedchart' class='chart'”></div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-sm">
-        <h4>Outages</h4>
-        <ul class="list-group">
-          {% if events %}
-            {% for event in events %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ event['offlinetimedate'] }}<a href="{{ url_for('event', eventid=event['filename']) }}">{{ event['id'] }}</a>
-                <span class="badge bg-primary rounded-pill">{{ event['downtimeformatted'] }}</span>
-            </li>
-            {% endfor %}
-          {% else %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">None</li>
-          {% endif %}
-        </ul>
-    </div>
-      <div class="col-sm">
-        <h4>Logs</h4>
-        <ul class="list-group">
-          {% if logfiles %}
-            {% for logfile in logfiles %}
-            <li class="list-group-item d-flex"><a href="{{ url_for('log', logid=logfile) }}">{{ logfile }}</a></li>
-            {% endfor %}
-          {% else %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">None</li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
-</div>
+  <div class="row">
+    <div class="col-sm">
+      <h4>Outages</h4>
+      <ul class="list-group">
+        {% if events %}
+          {% for event in events %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ event['offlinetimedate'] }}<a href="{{ url_for('event', eventid=event['filename']) }}">{{ event['offline_timedate'] }} - {{ event['reason'] }}</a>
+              <span class="badge bg-primary rounded-pill">{{ event['total_downtime']|round|int }}</span>
+          </li>
+          {% endfor %}
+        {% else %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">None</li>
+        {% endif %}
+      </ul>
+  </div>
+  <div class="col-sm">
+    <h4>Logs</h4>
+    <ul class="list-group">
+      {% if logfiles %}
+        {% for logfile in logfiles %}
+        <li class="list-group-item d-flex"><a href="{{ url_for('log', logid=logfile) }}">{{ logfile }}</a></li>
+        {% endfor %}
+      {% else %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">None</li>
+      {% endif %}
+    </ul>
+  </div>
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 <script type='text/javascript'>
-  var graphs = {{ graphJSON | safe }};
+  var ltgraphs = {{ ltgraphJSON | safe }};
   var stgraphs = {{ stgraphJSON | safe }};
-  Plotly.plot('latencychart',graphs,{});
+  Plotly.plot('latencychart',ltgraphs,{});
   Plotly.plot('speedchart',stgraphs,{});
 </script>
 {% endblock %}
