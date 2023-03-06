@@ -11,7 +11,7 @@
 <button type="submit" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;
   <div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
   <div class="row">
-    <div class="col">
+    <div class="col-sm">
       <select id="latencyrange">
         <option value="hour">Hour</option>
         <option value="day">Day</option>
@@ -26,7 +26,7 @@
   </div>
   <div class="row">
     <div class="col-sm">
-      <h4>Outages</h4>
+      <h4>Events</h4>
       <ul class="list-group">
         {% if events %}
           {% for event in events %}

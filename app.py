@@ -1,5 +1,5 @@
-import ajax, redis, pathlib, sys
-import os, yaml, plotly, json, datetime
+import ajax, pathlib
+import os, yaml
 import logging, config as config
 import logging.handlers as handlers
 
@@ -11,12 +11,6 @@ from config import get_configValue, set_configValue
 from jobs import scheduledCheckConnection, scheduledSpeedTest
 from lib.redis_server import getRedisConn
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
-
-import pandas as pd
-import plotly.express as px
-
-import plotly.graph_objs as go
-from plotly.subplots import make_subplots
 
 import redis
 
@@ -58,7 +52,7 @@ def appStartup():
     redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
     redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
 
-    loggingLevel = logging.DEBUG
+    loggingLevel = logging.INFO
     logger.setLevel(loggingLevel)
     formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
     logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)

@@ -8,6 +8,7 @@ Version 1.0 Release
 - Test all scenarios
 - Add exception catching to all external calls, i.e. Speedtests.
 - In config, switch for enable/pause/disable scheduled jobs.
+- in config, set logging level.
 - Show in UX what the server is currently doing. i.e. speed test, checking internet, etc
     - https://www.velotio.com/engineering-blog/how-to-implement-server-sent-events-using-python-flask-and-react
     - https://github.com/singingwolfboy/flask-sse
