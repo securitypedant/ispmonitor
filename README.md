@@ -5,7 +5,9 @@ This is a work in progress project. The final version will be a fully hostable I
 TODO
 Version 1.0 Release
 - Improve overall UX
+    - https://www.w3schools.com/bootstrap5/index.php
 - Test all scenarios
+- Add to connection monitor the first hop.
 - Add exception catching to all external calls, i.e. Speedtests.
 - In config, switch for enable/pause/disable scheduled jobs.
 - in config, set logging level.
