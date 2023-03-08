@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from lib.network import runSpeedtest, checkDefaultGateway
 from lib.datastore import storeMonitorValue
-from lib.graphs import getLatencyGraphData
+from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 import redis, speedtest
 import logging, config as config
 from lib.redis_server import getRedisConn
@@ -10,10 +10,15 @@ logger = logging.getLogger(config.loggerName)
 
 def getGraphData():
     dropdown_value = request.args.get('dropdownValue')
+    graph_type = request.args.get('graphType')
 
-    updated_data = getLatencyGraphData(dropdown_value)
+    if graph_type == "latency":
+        graphData = getLatencyGraphData(dropdown_value)
+    else:
+         graphData = getSpeedtestGraphData(dropdown_value)
 
-    return updated_data
+    return graphData
+
 
 def ajaxspeedtest():
     redis_conn = getRedisConn()

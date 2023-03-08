@@ -4,6 +4,7 @@ defaultinterface: en0
 hosts:
 - google.com
 - bbc.co.uk
+logginglevel: INFO
 pollfreq: 10
 speedtestfreq: 60
 speedtestjobstatus: pause

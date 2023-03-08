@@ -3,7 +3,7 @@ import os, yaml
 import logging, config as config
 import logging.handlers as handlers
 
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for
 from lib.datastore import readMonitorValues, getLastSpeedTest, createEventDict
 from lib.network import getLocalInterfaces
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -21,6 +21,7 @@ app.secret_key = 'BAD_SECRET_KEY'
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
+redis_conn = getRedisConn()
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -32,12 +33,19 @@ if get_configValue("connectionmonitorjobstatus") == "pause":
 if get_configValue("speedtestjobstatus") == "pause":
     jobSpeedTest.pause()
 
-redis_conn = getRedisConn()
 redis_conn.set('jobIDCheckConnection', jobCheckConnection.id)
 redis_conn.set('jobIDSpeedTest', jobSpeedTest.id)
 
 @app.before_first_request
 def appStartup():
+
+    logger.setLevel(get_configValue("logginglevel"))
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler.setLevel(get_configValue("logginglevel"))
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
+    
     # Check if required folders exist.
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -57,14 +65,6 @@ def appStartup():
     redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
     redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
     redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
-
-    loggingLevel = logging.INFO
-    logger.setLevel(loggingLevel)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
-    logHandler.setLevel(loggingLevel)
-    logHandler.setFormatter(formatter)
-    logger.addHandler(logHandler)
 
 @app.context_processor
 def getOnlineStatus():
@@ -88,7 +88,7 @@ app.add_url_rule('/ajax/getgraphdata', view_func=ajax.getGraphData)
 app.add_url_rule('/ajax/test', view_func=ajax.ajaxTest)
 
 @app.route("/", methods=['GET'])
-def render_home():
+def home():
 
     eventsFolder = redis_conn.get('eventsdatafolder')
     logFolder = redis_conn.get('logsdatafolder')
@@ -142,12 +142,15 @@ def event():
 def config():
     if request.method == 'POST':
         #Enumerate form data into file.
+        logger_level = request.form['logginglevel']
+        set_configValue('logginglevel', logger_level)
+        
         set_configValue("pollfreq", int(request.form['pollfreq']))
         set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
         set_configValue('datetimeformat', request.form['datetimeformat'])
         set_configValue('speedtestserverid', request.form['speedtestserverid'])
         set_configValue('defaultinterface', request.form['interfaceRadioGroup'])
-
+        
         set_configValue('connectionmonitorjobstatus', request.form['connectiontestjob_options'])
         set_configValue('speedtestjobstatus', request.form['speedtestjob_options'])
 
@@ -160,17 +163,25 @@ def config():
         elif get_configValue("speedtestjobstatus") == "run":
             jobSpeedTest.resume()
         
+        logger.setLevel(logger_level)
+        logger.warning("Logging level set to: " + logger_level)
+
         hostsList = request.form['hosts'].split('\r\n')
         hostsListClean = [item.strip() for item in hostsList]
 
         set_configValue('hosts', hostsListClean)
 
-    interfaces = getLocalInterfaces()
+        return redirect(url_for('home'))
 
-    with open('config.yaml', 'r') as configfile:
-        configdict = yaml.safe_load(configfile)
+    else:
+        interfaces = getLocalInterfaces()
 
-    return render_template("config.html", configdict=configdict, interfaces=interfaces)
+        with open('config.yaml', 'r') as configfile:
+            configdict = yaml.safe_load(configfile)
+
+        return render_template("config.html", configdict=configdict, interfaces=interfaces)
+
+
 
 if __name__ == "__main__":
     app.run()

@@ -8,7 +8,6 @@
       xhr.open('GET', '/ajax/listspeedtestservers', true);
       xhr.onload = function() {
         var result = JSON.parse(xhr.responseText);
-
         // Get a reference to the HTML element where you want to display the data
         const container = document.getElementById("speedtestserverlist_result");
         // Clear the contents of the container (optional)
@@ -59,6 +58,17 @@
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="datetimeformat">Date/Time Format</label></div>
     <div class="col-auto"><input type="text" name="datetimeformat" id="datetimeformat" value="{{ configdict['datetimeformat'] }}"></div>
+  </div>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="logginglevel">Logging level</label></div>
+    <div class="col-auto">
+      <select name="logginglevel" id="logginglevel">
+        <option value="DEBUG" {% if configdict['logginglevel'] == 'DEBUG' %}selected{% endif %}>Debug</option>
+        <option value="INFO" {% if configdict['logginglevel'] == 'INFO' %}selected{% endif %}>Info</option>
+        <option value="WARNING" {% if configdict['logginglevel'] == 'WARNING' %}selected{% endif %}>Warnings</option>
+        <option value="ERROR" {% if configdict['logginglevel'] == 'ERROR' %}selected{% endif %}>Errors</option>
+      </select>
+    </div>
   </div>
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="pollfreq">Internet check frequency (seconds)</label></div>
