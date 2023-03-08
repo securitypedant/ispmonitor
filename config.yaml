@@ -1,3 +1,4 @@
+connectionmonitorjobstatus: run
 datetimeformat: '%Y-%m-%d %H:%M:%S'
 defaultinterface: en0
 hosts:
@@ -5,5 +6,6 @@ hosts:
 - bbc.co.uk
 pollfreq: 10
 speedtestfreq: 60
+speedtestjobstatus: pause
 speedtestserverid: Any
 tracetargethost: 8.8.8.8

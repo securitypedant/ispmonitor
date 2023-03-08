@@ -36,24 +36,23 @@
     </div> 
     {% endfor %}
   <div class="row">
-    Connection check: 
+    Connection check job: 
     <div class="o-switch btn-group" data-toggle="buttons" role="group">
       <label class="btn btn-secondary active">
-        <input type="radio" name="options" id="option1" checked> Run
-      </label>
+        <input type="radio" name="connectiontestjob_options" id="connectiontestjob_run" value="run" {% if configdict['connectionmonitorjobstatus'] == 'run' %}checked{% endif %}> Run</label>
       <label class="btn btn-secondary">
-        <input type="radio" name="options" id="option2"> Pause
+        <input type="radio" name="connectiontestjob_options" id="connectiontestjob_pause" value="pause" {% if configdict['connectionmonitorjobstatus'] == 'pause' %}checked{% endif %}> Pause
       </label>
     </div> 
   </div>
   <div class="row">
-    Speedtest: 
+    Speedtest job: 
     <div class="o-switch btn-group" data-toggle="buttons" role="group">
       <label class="btn btn-secondary active">
-        <input type="radio" name="speedtest_options" id="option1" checked> Run
+        <input type="radio" name="speedtestjob_options" id="speedtestjob_run" value="run"{% if configdict['speedtestjobstatus'] == 'run' %}checked{% endif %}> Run
       </label>
       <label class="btn btn-secondary">
-        <input type="radio" name="speedtest_options" id="option2"> Pause
+        <input type="radio" name="speedtestjob_options" id="speedtestjob_pause" value="pause" {% if configdict['speedtestjobstatus'] == 'pause' %}checked{% endif %}> Pause
       </label>
     </div>  
   </div>
@@ -78,12 +77,12 @@
     <div class="col-auto"><input type="text" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
   </div>
 
-  <input type="submit" value="Save">
+  <input type="submit" class="btn btn-primary" value="Save">
 </form>
 <hr>
 <h5>Speedtest Servers</h5>
 <div class="row">
-  <button type="submit" name="listspeedtestservers_button" id="listspeedtestservers_button">List Speedtest Servers</button>
+  <button class="btn btn-primary" type="submit" name="listspeedtestservers_button" id="listspeedtestservers_button">List Speedtest Servers</button>
 </div>
 <div id="speedtestserverlist_result">
 </div>

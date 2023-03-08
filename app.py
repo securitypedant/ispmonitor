@@ -25,10 +25,16 @@ logger = logging.getLogger(config.loggerName)
 scheduler = BackgroundScheduler()
 scheduler.start()
 jobCheckConnection = scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-#jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
+
+if get_configValue("connectionmonitorjobstatus") == "pause":
+    jobCheckConnection.pause()
+if get_configValue("speedtestjobstatus") == "pause":
+    jobSpeedTest.pause()
 
 redis_conn = getRedisConn()
 redis_conn.set('jobIDCheckConnection', jobCheckConnection.id)
+redis_conn.set('jobIDSpeedTest', jobSpeedTest.id)
 
 @app.before_first_request
 def appStartup():
@@ -141,6 +147,18 @@ def config():
         set_configValue('datetimeformat', request.form['datetimeformat'])
         set_configValue('speedtestserverid', request.form['speedtestserverid'])
         set_configValue('defaultinterface', request.form['interfaceRadioGroup'])
+
+        set_configValue('connectionmonitorjobstatus', request.form['connectiontestjob_options'])
+        set_configValue('speedtestjobstatus', request.form['speedtestjob_options'])
+
+        if get_configValue("connectionmonitorjobstatus") == "pause":
+            jobCheckConnection.pause()
+        elif get_configValue("connectionmonitorjobstatus") == "run":
+            jobCheckConnection.resume()
+        if get_configValue("speedtestjobstatus") == "pause":
+            jobSpeedTest.pause()
+        elif get_configValue("speedtestjobstatus") == "run":
+            jobSpeedTest.resume()
         
         hostsList = request.form['hosts'].split('\r\n')
         hostsListClean = [item.strip() for item in hostsList]
