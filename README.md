@@ -6,6 +6,7 @@ TODO
 Version 1.0 Release
 - Improve overall UX
     - https://www.w3schools.com/bootstrap5/index.php
+    - https://designmodo.com/bootstrap-5-layout/
 - Test all scenarios
 - Add to connection monitor the first hop.
 - Add exception catching to all external calls, i.e. Speedtests.
