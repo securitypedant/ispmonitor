@@ -1,6 +1,6 @@
 connectionmonitorjobstatus: run
 datetimeformat: '%Y-%m-%d %H:%M:%S'
-defaultinterface: en0
+defaultinterface: Ethernet
 hosts:
 - google.com
 - bbc.co.uk

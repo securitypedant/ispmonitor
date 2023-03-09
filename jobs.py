@@ -1,5 +1,5 @@
 import logging, uuid, config as config
-from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers
+from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers, checkNetworkHops
 from config import get_configValue
 from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow
 from datetime import datetime
@@ -78,34 +78,47 @@ def scheduledCheckConnection():
             eventDict['offline_timedate'] = getDateNow()
             eventDict['checks'] = []
             
+            # --------------------- LOCAL INTERFACE CHECK ---------------------
             try:
                 # Is the local interface working?
                 defaultInterface = redis_conn.get('defaultinterface')
                 eventDict['checks'].append(checkLocalInterface(defaultInterface))
 
                 if eventDict['checks'][0][2] == False:
-                    eventDict['reason'] = "Network interface " + defaultInterface + " not up."
+                    eventDict['reason'] = "Network interface " + defaultInterface + " not available."
+            except Exception as e:
+                eventDict['checks'].append(["Exception in local interface check", getDateNow(), False, e.args])
 
+            # --------------------- DEFAULT GATEWAY CHECK ---------------------
+            try:
                 # Check immediate gateway. Ping default route.
                 eventDict['checks'].append(checkDefaultGateway())
 
                 if eventDict['checks'][1][2] == False:
                     eventDict['reason'] = eventDict['checks'][1][3]
+            except Exception as e:
+                eventDict['checks'].append(["Exception in default gateway check", getDateNow(), False, e.args])
 
-                # Is DNS resolving?
+            # --------------------- DNS CHECK ---------------------
+            try:
                 for host in hosts:
                     eventDict['checks'].append(checkDNSServers(host))
-                
+            except Exception as e:
+                eventDict['checks'].append(["Exception in DNS check", getDateNow(), False, e.args])
+
+            # --------------------- IMMEDIATE NETWORK HOPS CHECK ---------------------
+            try:            
                 # Check the hop directly after our gateway. Is it working?
-                eventDict['checks'].append(traceroute(redis_conn.get('traceTargetHost')))
+                networkHops = traceroute(redis_conn.get('traceTargetHost'))
+                checkNetworkHops(networkHops)
+                eventDict['checks'].append()
 
             except Exception as e:
-                eventDict['checks'].append(["Exception in check", getDateNow(), False, e.args])
+                eventDict['checks'].append(["Exception in immediate hops check", getDateNow(), False, e.args])
 
-            finally:
-                logger.error("Connection test failed")
+            logger.error("Connection test failed")
 
-                # Store data
-                createEvent(eventDict)
-                redis_conn.set('last_eventid', eventDict['id'])
-                redis_conn.set('last_eventdate', eventDict['offline_timedate'])   
+            # Store data
+            createEvent(eventDict)
+            redis_conn.set('last_eventid', eventDict['id'])
+            redis_conn.set('last_eventdate', eventDict['offline_timedate'])   

@@ -42,6 +42,7 @@ def updateEvent(filename, event):
     json_object['downspeed'] = event['downspeed']
     json_object['upspeed'] = event['upspeed']
     json_object['online_timedate'] = getDateNow()
+    json_object['currentState'] = event['currentState']
 
     # Figure out downtime
     offlineStart = datetime.strptime(json_object["offline_timedate"], "%Y-%m-%d %H:%M:%S")

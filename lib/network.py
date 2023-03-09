@@ -41,22 +41,23 @@ def checkDefaultGateway():
 
         pingReturn = ping(default_gateway, unit='ms')
 
-        if isinstance(pingReturn, (int, float, complex)):
-            pingSuccess = True
-        else:
+        if pingReturn or pingReturn is None:
             pingSuccess = False
-            returnMessage = default_gateway + " didn't reply: " + pingReturn
-        
-        returnMessage = default_gateway + " response: " + str(round(pingReturn))
+            returnMessage = default_gateway + " didn't reply: " + str(pingReturn)    
+        else:
+            pingSuccess = True
+            returnMessage = default_gateway + " response: " + str(round(pingReturn))
 
     return ["Gateway Status", getDateNow(), pingSuccess, returnMessage]
 
 def checkLocalInterface(which_interface):
     # Is this interface up?
     interfaces = psutil.net_if_stats()
-    interface = interfaces[which_interface]
-
-    return ["Interface Status", getDateNow(), interface.isup, "Network interface '" + which_interface + "' is up? " + str(interface.isup)]
+    if which_interface in interfaces:
+        interface = interfaces[which_interface]
+        return ["Interface Status", getDateNow(), interface.isup, "Network interface '" + which_interface + "' is up? " + str(interface.isup)]
+    else:
+        return ["Interface Status", getDateNow(), False, "Network interface missing from system: " + which_interface]
 
 def getLocalInterfaces():
     # Return a list of local interface details in a list.
@@ -64,6 +65,7 @@ def getLocalInterfaces():
     return psutil.net_if_addrs()
 
 def checkConnection(hosts):
+    """ Ping a list of hosts to determine if current connection is working correctly. """
     failedHosts = 0
     returnDict = []
     pingReturnDict = []
@@ -105,6 +107,21 @@ def checkConnection(hosts):
         returnDict = ['Partial',pingReturnDict]
     
     return returnDict
+
+def checkNetworkHops(hops):
+    """ Check a list of IP4 addresses to see if we can contact them. Check in order of a traceroute result. """
+    result = []
+    for hop in hops:
+        if checkNetworkIP4Address(hop):
+            result.append("Success connecting to " + str(hop))
+
+    return result
+
+def checkNetworkIP4Address(hop):
+    """ Try to contact an IP4 network address and determine if we can communicate with it. """
+    ping_return = ping(hop)
+    
+    return ping_return
 
 def traceroute(hostname):
     # Use local OS traceroute command to return a list of IP addresses.
