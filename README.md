@@ -4,6 +4,7 @@ This is a work in progress project. The final version will be a fully hostable I
 
 TODO
 Version 1.0 Release
+- Reverse order of data in graph
 - Improve overall UX
     - https://www.w3schools.com/bootstrap5/index.php
     - https://designmodo.com/bootstrap-5-layout/

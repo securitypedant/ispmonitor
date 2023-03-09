@@ -1,10 +1,14 @@
+checknetconfigjobstatus: pause
 connectionmonitorjobstatus: run
 datetimeformat: '%Y-%m-%d %H:%M:%S'
-defaultinterface: Ethernet
+defaultinterface: en0
 hosts:
-- google.com
-- bbc.co.uk
+- - google.com
+  - inet
+- - bbc.co.uk
+  - inet
 logginglevel: INFO
+netconfigtestfreq: 10
 pollfreq: 10
 speedtestfreq: 60
 speedtestjobstatus: pause

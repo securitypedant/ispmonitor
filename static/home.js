@@ -17,6 +17,11 @@ window.onload=function(){
       document.getElementById('speedtest_button').disabled = true;
       document.getElementById('speedtest_button').textContent = "Speedtest Running...";
     });
+    document.getElementById('test_button').addEventListener('click', function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/ajax/test', true);
+      xhr.send();
+    });    
     var latencydropdown = document.getElementById('latencyrange');
     latencydropdown.addEventListener('change', function() {
         var xhr = new XMLHttpRequest();

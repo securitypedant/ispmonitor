@@ -1,5 +1,5 @@
 import subprocess, logging, json, config as config
-import speedtest, logging, psutil
+import speedtest, logging, psutil, re
 from ping3 import ping
 import redis, netifaces, dns.resolver
 from config import get_configValue
@@ -8,7 +8,7 @@ from lib.redis_server import getRedisConn
 
 logger = logging.getLogger(config.loggerName)
 
-redis_conn = getRedisConn()    
+redis_conn = getRedisConn()
 
 def checkDNSServers(host):
     # https://dnspython.readthedocs.io/en/stable/index.html
@@ -35,13 +35,13 @@ def checkDefaultGateway():
     gateways = netifaces.gateways()
     if gateways['default'] == {}:
         pingSuccess = False
-        returnMessage = "No default gateway"
+        returnMessage = "No default gateway set."
     else:
         default_gateway = gateways['default'][netifaces.AF_INET][0]
 
-        pingReturn = ping(default_gateway, unit='ms')
+        pingReturn = os_ping(default_gateway, 1, 'local')
 
-        if pingReturn or pingReturn is None:
+        if not pingReturn or pingReturn is None:
             pingSuccess = False
             returnMessage = default_gateway + " didn't reply: " + str(pingReturn)    
         else:
@@ -66,35 +66,32 @@ def getLocalInterfaces():
 
 def checkConnection(hosts):
     """ Ping a list of hosts to determine if current connection is working correctly. """
-    failedHosts = 0
     returnDict = []
+    failedHosts = 0
     pingReturnDict = []
 
     for host in hosts:
     # Ping target to determine if network is available.
-        logger.debug("Pinging " + host)
+
+        hostname = host[0]
+        hosttype = host[1]
+        logger.debug("Pinging " + hostname)
         
-        # https://pypi.org/project/ping3/
-        # Ping the host once, default timeout is 4 seconds.
-        pingReturn = ping(host, unit='ms')
+        # Ping the host once,
+        pingReturn = os_ping(hostname, 1, hosttype)
 
         # ['Success',[[google.com, 35, 'Success'][bbc.co.uk, 20, 'Success']]]
-        # ['Partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'LookupFailed']]]
+        # ['Partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'CannotResolve']]]
         # ['Failed',[[google.com, 0, 'Timeout'][bbc.co.uk, 0, 'Timeout']]]
 
-        if pingReturn:
+        if pingReturn['response'] == 'success':
             # Host is reachable
-            logger.debug("Success reaching " + host)
-            pingReturnDict.append([host,pingReturn,'Success'])
-        elif not pingReturn:
+            logger.debug("Success reaching " + hostname)
+            pingReturnDict.append([hostname, pingReturn['timing'][0], 'Success'])
+        elif pingReturn['response'] == 'failed':
             # False when Ping cannot resolve hostname
-            logger.warning("Cannot resolve " + host)
-            pingReturnDict.append([host,0,'CannotResolve'])
-            failedHosts = failedHosts + 1
-        else:
-            # None when Ping timesout trying to connect.
-            logger.warning("Timeout pinging " + host)
-            pingReturnDict.append([host,0,'Timeout'])
+            logger.warning(pingReturn['response_reason'] + ":" + hostname + " code:" + str(pingReturn['code']))
+            pingReturnDict.append([hostname, 0, pingReturn['response_reason']])
             failedHosts = failedHosts + 1
 
     if failedHosts == 0:
@@ -105,23 +102,32 @@ def checkConnection(hosts):
     else:
         # At least one host failed to respond.
         returnDict = ['Partial',pingReturnDict]
-    
+        
     return returnDict
 
 def checkNetworkHops(hops):
     """ Check a list of IP4 addresses to see if we can contact them. Check in order of a traceroute result. """
-    result = []
+    hop_check_result = []
+    traceroute_success = True
     for hop in hops:
         if checkNetworkIP4Address(hop):
-            result.append("Success connecting to " + str(hop))
+            hop_check_result.append("Success:" + str(hop))
+        else:
+            hop_check_result.append("Failed:" + str(hop))
+            traceroute_success = False
 
-    return result
+    return ["Traceroute results", getDateNow(), traceroute_success, hop_check_result]
 
 def checkNetworkIP4Address(hop):
     """ Try to contact an IP4 network address and determine if we can communicate with it. """
     ping_return = ping(hop)
-    
-    return ping_return
+
+    if not ping_return or ping_return is None:
+        # Ping failed
+        return False
+    else:
+        # Ping success
+        return True
 
 def traceroute(hostname):
     # Use local OS traceroute command to return a list of IP addresses.
@@ -168,21 +174,51 @@ def ping3host(hostname):
     else:
         return result
 
-def pinghost(hostname):
-    if config.osType == "Linux" or config.osType == "Darwin":
-        pingResult = subprocess.Popen(["ping",hostname, "-c", "4"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def os_ping(host, count=4, type='inet'):
+    """ Ping an IP4 network address returning a dict with information.
+        type parameters refines the ping command, like so.
+        inet = An internet address which may take several seconds to reply.
+        local = A LAN or very close WAN address we expect to be millisecond in response.
+    """
+    returnDict = {}
+
+    if config.osType == "Darwin":
+        if type == 'local':
+            response_timeout = '250'
+        elif type == 'inet':
+            response_timeout = '1000'
+        ping_command = ['ping', '-W', response_timeout, '-c', str(count), host]
+
+    elif config.osType == "Linux":
+        response_timeout = '1'
+        ping_command = ['ping', '-W', response_timeout, '-c', str(count), host]
+
     else:
-        pingResult = subprocess.Popen(["ping", "-n", "4", hostname],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    pingResult.wait()
+        ping_command = ['ping', '-n', str(count), host]
+    
+    ping_output = subprocess.run(ping_command, capture_output=True, text=True)
 
-    """
-    Return values
-        0 = Success
-        2 = No reply
-        68 = DNS lookup failed
-    """
-    return pingResult.poll()
-
+    if ping_output.returncode == 0:
+        returnDict['response'] = "success"
+        returnDict['response_reason'] = "success"
+        # extract the response time from the output
+        pattern = r"time=([\d.]+) ms"
+        response_times = re.findall(pattern, ping_output.stdout)
+        returnDict['timing'] = response_times
+        response_times_floats = [float(num) for num in response_times]
+        returnDict['avg_timing'] = str(sum(response_times_floats) / len(response_times_floats))
+    elif ping_output.returncode == 2:
+        returnDict['response'] = "failed"
+        returnDict['response_reason'] = "no response"
+    elif ping_output.returncode == 68:
+        returnDict['response'] = "failed"
+        returnDict['response_reason'] = "unknown host"
+    else:
+        returnDict['response'] = "failed"
+        returnDict['response_reason'] = "unknown"
+        
+    returnDict['code'] = ping_output.returncode
+    return returnDict
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki

@@ -55,6 +55,17 @@
       </label>
     </div>  
   </div>
+  <div class="row">
+    Network config check job: 
+    <div class="o-switch btn-group" data-toggle="buttons" role="group">
+      <label class="btn btn-secondary active">
+        <input type="radio" name="netconfigjob_options" id="netconfigjob_run" value="run"{% if configdict['checknetconfigjobstatus'] == 'run' %}checked{% endif %}> Run
+      </label>
+      <label class="btn btn-secondary">
+        <input type="radio" name="netconfigjob_options" id="netconfigjob_pause" value="pause" {% if configdict['checknetconfigjobstatus'] == 'pause' %}checked{% endif %}> Pause
+      </label>
+    </div>  
+  </div>  
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="datetimeformat">Date/Time Format</label></div>
     <div class="col-auto"><input type="text" name="datetimeformat" id="datetimeformat" value="{{ configdict['datetimeformat'] }}"></div>
@@ -71,13 +82,27 @@
     </div>
   </div>
   <div class="row g-3 align-items-center">
+    <div class="col-auto"><label for="pollfreq">Network config check frequency (seconds)</label></div>
+    <div class="col-auto"><input type="text" name="netconfigtestfreq" id="netconfigtestfreq" value="{{ configdict['netconfigtestfreq'] }}"></div>
+  </div>
+  <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="pollfreq">Internet check frequency (seconds)</label></div>
     <div class="col-auto"><input type="text" name="pollfreq" id="pollfreq" value="{{ configdict['pollfreq'] }}"></div>
   </div>
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="hosts">Hosts to check</label></div>
-    <div class="col-auto"><textarea name="hosts" id="hosts">{% for host in configdict['hosts'] %}
-{{ host }}{% endfor %}</textarea></div></div>
+    <div class="col-auto">
+      {% for host in configdict['hosts'] %}
+      <div>
+        <input type="text" name="hosts" id="host1" value="{{ host[0] }}">
+        <select name="hosttype" id="host1">
+          <option value="inet" {% if host[1] == 'inet' %}selected{% endif %}>Internet</option>
+          <option value="local" {% if host[1] == 'local' %}selected{% endif %}>Local LAN</option>
+        </select>
+      </div>
+      {% endfor %} 
+    </div>
+  </div>
   <div class="row g-3 align-items-center">
     <div class="col-auto"><label for="speedtestfreq">Speed test frequency (Seconds)</label></div>
     <div class="col-auto"><input type="text" name="speedtestfreq" id="speedtestfreq" value="{{ configdict['speedtestfreq'] }}"></div>

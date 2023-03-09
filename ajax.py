@@ -1,8 +1,8 @@
 from flask import jsonify, request
-from lib.network import runSpeedtest, checkDefaultGateway
+from lib.network import runSpeedtest, checkDefaultGateway, checkNetworkHops
 from lib.datastore import storeMonitorValue
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
-import redis, speedtest
+import redis, speedtest, json
 import logging, config as config
 from lib.redis_server import getRedisConn
 
@@ -53,6 +53,7 @@ def ajaxListSpeedtestServers():
 
 
 def ajaxTest():
-    isLocalInterfaceUp = checkDefaultGateway()
+    redis_conn = getRedisConn()
+    networkHopCheck = checkNetworkHops(json.loads(redis_conn.get('networkhops')))
 
-    return jsonify(isLocalInterfaceUp)
+    return jsonify(networkHopCheck)
