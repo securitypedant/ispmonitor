@@ -25,100 +25,109 @@
     });
   }
   </script>
-<h5>Current configuration</h5>
-<form method="post" action="/config">
-    Which network interface should be used for monitoring?<br>
-    {% for key, value in interfaces.items() %}
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="interfaceRadioGroup" id="{{ key }}" value="{{ key }}" {% if configdict['defaultinterface'] == key %}checked{% endif %}>
-      <label class="form-check-label" for="radioCheck1">{{ key }}</label>
-    </div> 
-    {% endfor %}
-  <div class="row">
-    Connection check job: 
-    <div class="o-switch btn-group" data-toggle="buttons" role="group">
-      <label class="btn btn-secondary active">
-        <input type="radio" name="connectiontestjob_options" id="connectiontestjob_run" value="run" {% if configdict['connectionmonitorjobstatus'] == 'run' %}checked{% endif %}> Run</label>
-      <label class="btn btn-secondary">
-        <input type="radio" name="connectiontestjob_options" id="connectiontestjob_pause" value="pause" {% if configdict['connectionmonitorjobstatus'] == 'pause' %}checked{% endif %}> Pause
-      </label>
-    </div> 
-  </div>
-  <div class="row">
-    Speedtest job: 
-    <div class="o-switch btn-group" data-toggle="buttons" role="group">
-      <label class="btn btn-secondary active">
-        <input type="radio" name="speedtestjob_options" id="speedtestjob_run" value="run"{% if configdict['speedtestjobstatus'] == 'run' %}checked{% endif %}> Run
-      </label>
-      <label class="btn btn-secondary">
-        <input type="radio" name="speedtestjob_options" id="speedtestjob_pause" value="pause" {% if configdict['speedtestjobstatus'] == 'pause' %}checked{% endif %}> Pause
-      </label>
-    </div>  
-  </div>
-  <div class="row">
-    Network config check job: 
-    <div class="o-switch btn-group" data-toggle="buttons" role="group">
-      <label class="btn btn-secondary active">
-        <input type="radio" name="netconfigjob_options" id="netconfigjob_run" value="run"{% if configdict['checknetconfigjobstatus'] == 'run' %}checked{% endif %}> Run
-      </label>
-      <label class="btn btn-secondary">
-        <input type="radio" name="netconfigjob_options" id="netconfigjob_pause" value="pause" {% if configdict['checknetconfigjobstatus'] == 'pause' %}checked{% endif %}> Pause
-      </label>
-    </div>  
-  </div>  
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="datetimeformat">Date/Time Format</label></div>
-    <div class="col-auto"><input type="text" name="datetimeformat" id="datetimeformat" value="{{ configdict['datetimeformat'] }}"></div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="logginglevel">Logging level</label></div>
-    <div class="col-auto">
-      <select name="logginglevel" id="logginglevel">
-        <option value="DEBUG" {% if configdict['logginglevel'] == 'DEBUG' %}selected{% endif %}>Debug</option>
-        <option value="INFO" {% if configdict['logginglevel'] == 'INFO' %}selected{% endif %}>Info</option>
-        <option value="WARNING" {% if configdict['logginglevel'] == 'WARNING' %}selected{% endif %}>Warnings</option>
-        <option value="ERROR" {% if configdict['logginglevel'] == 'ERROR' %}selected{% endif %}>Errors</option>
-      </select>
+<div class="container py-2">
+  <h5>Current configuration</h5>
+  <form method="post" action="/config" class="form-inline">
+      Which network interface should be used for monitoring?<br>
+      {% for key, value in interfaces.items() %}
+      <div class="form-check-inline">
+          <input class="form-check-input" type="radio" name="interfaceRadioGroup" id="{{ key }}" value="{{ key }}" {% if configdict['defaultinterface'] == key %}checked{% endif %}>
+          <label class="form-check-label" for="{{ key }}">{{ key }}</label>
+      </div>
+      {% endfor %}
+    <div class="row py-1">
+      <div class="col-4">Connection check job:</div>
+      <div class="col-7">
+        <div class="o-switch btn-group" data-toggle="buttons" role="group">
+          <label class="btn btn-secondary active">
+            <input type="radio" name="connectiontestjob_options" id="connectiontestjob_run" value="run" {% if configdict['connectionmonitorjobstatus'] == 'run' %}checked{% endif %}> Run</label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="connectiontestjob_options" id="connectiontestjob_pause" value="pause" {% if configdict['connectionmonitorjobstatus'] == 'pause' %}checked{% endif %}> Pause
+          </label>
+        </div> 
+      </div>
     </div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="pollfreq">Network config check frequency (seconds)</label></div>
-    <div class="col-auto"><input type="text" name="netconfigtestfreq" id="netconfigtestfreq" value="{{ configdict['netconfigtestfreq'] }}"></div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="pollfreq">Internet check frequency (seconds)</label></div>
-    <div class="col-auto"><input type="text" name="pollfreq" id="pollfreq" value="{{ configdict['pollfreq'] }}"></div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="hosts">Hosts to check</label></div>
-    <div class="col-auto">
-      {% for host in configdict['hosts'] %}
-      <div>
-        <input type="text" name="hosts" id="host1" value="{{ host[0] }}">
-        <select class="form-select" name="hosttype" id="host1">
-          <option value="inet" {% if host[1] == 'inet' %}selected{% endif %}>Internet</option>
-          <option value="local" {% if host[1] == 'local' %}selected{% endif %}>Local LAN</option>
+    <div class="row py-1">
+      <div class="col-4">Speedtest job:</div>
+      <div class="col-7">
+        <div class="o-switch btn-group" data-toggle="buttons" role="group">
+          <label class="btn btn-secondary active">
+            <input type="radio" name="speedtestjob_options" id="speedtestjob_run" value="run"{% if configdict['speedtestjobstatus'] == 'run' %}checked{% endif %}> Run
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="speedtestjob_options" id="speedtestjob_pause" value="pause" {% if configdict['speedtestjobstatus'] == 'pause' %}checked{% endif %}> Pause
+          </label>
+        </div>  
+      </div>
+    </div>
+    <div class="row py-1">
+      <div class="col-4">Network config check job:</div>
+      <div class="col-7">
+        <div class="o-switch btn-group" data-toggle="buttons" role="group">
+          <label class="btn btn-secondary active">
+            <input type="radio" name="netconfigjob_options" id="netconfigjob_run" value="run"{% if configdict['checknetconfigjobstatus'] == 'run' %}checked{% endif %}> Run
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="netconfigjob_options" id="netconfigjob_pause" value="pause" {% if configdict['checknetconfigjobstatus'] == 'pause' %}checked{% endif %}> Pause
+          </label>
+        </div>  
+      </div>
+    </div>  
+    <div class="row g-3">
+      <div class="col-4"><label class="form-label" for="datetimeformat">Date/Time Format</label></div>
+      <div class="col-5"><input type="text" class="form-control" name="datetimeformat" id="datetimeformat" value="{{ configdict['datetimeformat'] }}"></div>
+    </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-4"><label for="logginglevel">Logging level</label></div>
+      <div class="col-5">
+        <select name="logginglevel"  class="form-control" id="logginglevel">
+          <option value="DEBUG" {% if configdict['logginglevel'] == 'DEBUG' %}selected{% endif %}>Debug</option>
+          <option value="INFO" {% if configdict['logginglevel'] == 'INFO' %}selected{% endif %}>Info</option>
+          <option value="WARNING" {% if configdict['logginglevel'] == 'WARNING' %}selected{% endif %}>Warnings</option>
+          <option value="ERROR" {% if configdict['logginglevel'] == 'ERROR' %}selected{% endif %}>Errors</option>
         </select>
       </div>
-      {% endfor %} 
     </div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="speedtestfreq">Speed test frequency (Seconds)</label></div>
-    <div class="col-auto"><input type="text" name="speedtestfreq" id="speedtestfreq" value="{{ configdict['speedtestfreq'] }}"></div>
-  </div>
-  <div class="row g-3 align-items-center">
-    <div class="col-auto"><label for="speedtestserverid">Speed test server (ID)</label></div>
-    <div class="col-auto"><input type="text" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
-  </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-4"><label for="pollfreq">Network config check frequency (seconds)</label></div>
+      <div class="col-5"><input type="text" class="form-control" name="netconfigtestfreq" id="netconfigtestfreq" value="{{ configdict['netconfigtestfreq'] }}"></div>
+    </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-4"><label for="pollfreq">Internet check frequency (seconds)</label></div>
+      <div class="col-5"><input type="text" class="form-control" name="pollfreq" id="pollfreq" value="{{ configdict['pollfreq'] }}"></div>
+    </div>
+    <div class="row g-3 align-items-center">
+      
+        <div class="col-4"><label for="hosts">Hosts to check</label></div>
+        <div class="col-5">
+          {% for host in configdict['hosts'] %}
+          <div class="input-group">
+            <input type="text" class="form-control" name="hosts" id="host1" value="{{ host[0] }}">
+            <select class="form-control" name="hosttype" id="host1">
+              <option value="inet" {% if host[1] == 'inet' %}selected{% endif %}>Internet</option>
+              <option value="local" {% if host[1] == 'local' %}selected{% endif %}>Local LAN</option>
+            </select>
+          </div>
+          {% endfor %} 
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-4"><label for="speedtestfreq">Speed test frequency (Seconds)</label></div>
+      <div class="col-5"><input type="text" class="form-control" name="speedtestfreq" id="speedtestfreq" value="{{ configdict['speedtestfreq'] }}"></div>
+    </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-4"><label for="speedtestserverid">Speed test server (ID)</label></div>
+      <div class="col-5"><input type="text" class="form-control" name="speedtestserverid" id="speedtestserverid" value="{{ configdict['speedtestserverid'] }}"></div>
+    </div>
 
-  <input type="submit" class="btn btn-primary" value="Save">
-</form>
-<hr>
-<h5>Speedtest Servers</h5>
-<div class="row">
-  <button class="btn btn-primary" type="submit" name="listspeedtestservers_button" id="listspeedtestservers_button">List Speedtest Servers</button>
-</div>
-<div id="speedtestserverlist_result">
+    <input type="submit" class="btn btn-primary" value="Save">
+  </form>
+  <hr>
+  <h5>Speedtest Servers</h5>
+  <div class="row">
+    <button class="btn btn-primary" type="submit" name="listspeedtestservers_button" id="listspeedtestservers_button">List Speedtest Servers</button>
+  </div>
+  <div id="speedtestserverlist_result">
+  </div>
 </div>
 {% endblock %}

@@ -4,6 +4,7 @@ This is a work in progress project. The final version will be a fully hostable I
 
 TODO
 Version 1.0 Release
+- Create docs and setup.sh
 - Reverse order of data in graph
 - Improve overall UX
     - https://www.w3schools.com/bootstrap5/index.php
@@ -14,13 +15,6 @@ Version 1.0 Release
 - Show in UX what the server is currently doing. i.e. speed test, checking internet, etc
     - https://www.velotio.com/engineering-blog/how-to-implement-server-sent-events-using-python-flask-and-react
     - https://github.com/singingwolfboy/flask-sse
-- Add list of network devices used for internet and include in outage check
-    - DNS, router, firewall etc
-    - Goal is to be able to determine why the internet is not available. Is your router down? DNS failure?
-    - Tools
-        - https://psutil.readthedocs.io/en/latest/
-- Improve logic for detecting an outage.
-    - Possible a speedtest is blocking the scheduler.
 
 Future release
 - Button to create speedtest report.

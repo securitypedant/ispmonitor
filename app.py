@@ -81,14 +81,29 @@ def get_last_speed_test():
     return dict(lastspeedcheck=lastspeedtest)
 
 @app.context_processor
-def get_online_staus():
-    status = redis_conn.get('currentstate')
-    if status == 'online':
-        online = True
+def get_monitor_status():
+    if get_configValue("connectionmonitorjobstatus") == "pause":
+        status = 'paused'
     else:
-        online = False
+        status = redis_conn.get('currentstate')
         
-    return dict(onlinestatus=online)
+    return dict(monitor_status=status)
+
+@app.context_processor
+def get_speedtest_staus():
+    if get_configValue("speedtestjobstatus") == "pause":
+        status = 'paused'
+    else:
+        status = redis_conn.get('isspeedtestrunning')
+    return dict(speedtest_status=status)
+
+@app.context_processor
+def get_netconfig_staus():
+    if get_configValue("checknetconfigjobstatus") == "pause":
+        status = 'paused'
+    else:
+        status = redis_conn.get('isnetconfigjobrunning')
+    return dict(netconfig_status=status)
 
 @app.context_processor
 def lastcheckdate():

@@ -8,9 +8,9 @@ hosts:
 - - bbc.co.uk
   - inet
 logginglevel: INFO
-netconfigtestfreq: 60
+netconfigtestfreq: 86400
 pollfreq: 10
-speedtestfreq: 60
-speedtestjobstatus: pause
+speedtestfreq: 10800
+speedtestjobstatus: run
 speedtestserverid: Any
 tracetargethost: 8.8.8.8

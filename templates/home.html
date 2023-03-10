@@ -2,24 +2,29 @@
 {% block title %}ISP Monitor{% endblock %}
 {% block content %}
 <script src="{{url_for('static', filename='home.js')}}"></script>
+<div class="container-fluid py-2">
   <div class="row">
     <div class="col-sm-6">
       <div id='latencychart' class='chart'”></div>
-      <select class="form-select" id="latencyrange">
-        <option value="hour">Hour</option>
-        <option value="day">Day</option>
-        <option value="week">Week</option>
-        <option value="month">Month</option>
-      </select>
+      <div class="container w-25">
+        <select class="form-select" id="latencyrange">
+          <option value="hour">Hour</option>
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+        </select>
+      </div>
     </div>
     <div class="col-sm-6">
       <div id='speedchart' class='chart'”></div>
-      <select class="form-select" id="speedrange">
-        <option value="hour">Hour</option>
-        <option value="day">Day</option>
-        <option value="week" selected>Week</option>
-        <option value="month">Month</option>
-      </select>      
+      <div class="container w-25">
+        <select class="form-select" id="speedrange">
+          <option value="hour">Hour</option>
+          <option value="day">Day</option>
+          <option value="week" selected>Week</option>
+          <option value="month">Month</option>
+        </select>
+      </div>
     </div>
   </div>
   <div class="row py-3">
@@ -50,6 +55,7 @@
       {% endif %}
     </ul>
   </div>
+</div>
 <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 <script type='text/javascript'>
   var ltgraphs = {{ ltgraphJSON | safe }};

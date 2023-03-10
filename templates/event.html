@@ -1,50 +1,53 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor event details{% endblock %}
 {% block content %}
-<h4>Event details</h4>
-<div class="container p-3">
-  <div class="row py-3">
-    <div class="col">Reason for outage: {{ event["reason"] }}</div>
-    <div class="col">Current status: {{ event["currentState"] }}</div>
+<div class="container-fluid py-2">
+  <h4>Event details</h4>
+  <div class="container p-3">
+    <div class="row py-1">
+      <div class="col">
+        Current status: <span class="badge {% if event["currentState"] == 'online' %}bg-success{% else %}bg-danger{% endif %}">{{ event["currentState"] }}</span>.
+        Reason for outage: {{ event["reason"] }}</div>
+    </div>
+    <div class="row py-1">
+      <div class="col">Total downtime: {{ event["total_downtime"]|round(2) }} seconds.</div>
+      <div class="col">Offline time/date: {{ event["offline_timedate"] }}</div>
+      <div class="col">Online time/date: {{ event["online_timedate"] }}</div>
+    </div>
+    <div class="row py-1">
+      <div class="col">Ping: {{ event["onlineping"] }} m/s</div>
+      <div class="col">Download speed: {{ event["downspeed"]|round(2) // 1000 // 1000 }} Mb/s</div>
+      <div class="col">Upload speed: {{ event["upspeed"]|round(2) // 1000 // 1000 }} Mb/s</div>
+    </div>
+    <hr>
+    <h5>Connection check results</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Date / Time</th>
+          <th scope="col">Check</th>
+          <th scope="col">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eventRecord in event['checks'] %}
+        <tr class="{% if eventRecord[2] %}table-success{% else %}table-danger{% endif %}">
+          <td class="col-2">{{ eventRecord[1] }}</th>
+          <td class="col-3">{{ eventRecord[0] }}</td>
+          {% if eventRecord[3] is iterable and (eventRecord[3] is not string and eventRecord[3] is not mapping) %}
+          <td>
+            {% for record in eventRecord[3] %}
+              <div>{{ record }}</div>
+            {% endfor %}
+          </td>
+          {% else %}
+          <td>{{ eventRecord[3] }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table> 
   </div>
-  <div class="row py-3">
-    <div class="col">Total downtime: {{ event["total_downtime"]|round(2) }} seconds.</div>
-    <div class="col">Offline time/date: {{ event["offline_timedate"] }}</div>
-    <div class="col">Online time/date: {{ event["online_timedate"] }}</div>
-  </div>
-  <div class="row py-3">
-    <div class="col">Ping: {{ event["onlineping"] }} m/s</div>
-    <div class="col">Download speed: {{ event["downspeed"]|round(2) // 1000 // 1000 }} Mb/s</div>
-    <div class="col">Upload speed: {{ event["upspeed"]|round(2) // 1000 // 1000 }} Mb/s</div>
-  </div>
-  <hr>
-  <h5>Connection check results</h5>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Date / Time</th>
-        <th scope="col">Check</th>
-        <th scope="col">Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for eventRecord in event['checks'] %}
-      <tr class="{% if eventRecord[2] %}table-success{% else %}table-danger{% endif %}">
-        <td class="col-2">{{ eventRecord[1] }}</th>
-        <td class="col-3">{{ eventRecord[0] }}</td>
-        {% if eventRecord[3] is iterable and (eventRecord[3] is not string and eventRecord[3] is not mapping) %}
-        <td>
-          {% for record in eventRecord[3] %}
-            <div>{{ record }}</div>
-          {% endfor %}
-        </td>
-        {% else %}
-        <td>{{ eventRecord[3] }}</td>
-        {% endif %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table> 
 </div>
 {% endblock %}
 
