@@ -34,12 +34,11 @@
     </nav>
     <div class="container-fluid bg-light pb-1">
       <div class="row">
-        <div class="col-7 d-flex align-items-center">
+        <div class="col-sm-9 d-flex align-items-center">
             <div class="align-middle" id="lastcheck_result">Last check: {{ lastcheckdate }}.&nbsp;</div>
             <div class="align-middle" id="speedtest_result">Bandwidth: Down={{ lastspeedcheck['download'] }} Mbps, Up={{ lastspeedcheck['upload'] }} Mbps</div>
         </div>
-        <div class="col-5 d-flex flex-row-reverse p-1">
-          
+        <div class="col-3 d-flex flex-row-reverse p-1">
           <i id="ethernet-indicator" class="bi bi-ethernet pe-4" style="font-size: 1.5rem; color:{% if monitor_status == 'online' %}green{% elif monitor_status == 'paused' %}grey{% else %}red{% endif %};"></i>
           <i id="speedtest-indicator" class="bi bi-speedometer pe-2" style="font-size: 1.5rem; color:{% if speedtest_status == 'yes' %}green{% elif speedtest_status == 'paused' %}grey{% else %}orange{% endif %}"></i>
           <i id="netconfig-indicator" class="bi bi-gear pe-2" style="font-size: 1.5rem; color:{% if netconfig_status == 'yes' %}green{% elif netconfig_status == 'paused' %}grey{% else %}orange{% endif %}"></i>
