@@ -1,36 +1,28 @@
 {% extends "layout.html" %}
 {% block title %}ISP Monitor{% endblock %}
 {% block content %}
-<script type="text/javascript">
-  var isSpeedTestRunning = false
-  if ('{{ isSpeedTestRunning }}' == 'yes') {
-    var isSpeedTestRunning = true
-  }
-</script>
 <script src="{{url_for('static', filename='home.js')}}"></script>
-<button type="submit" class="btn btn-primary" name="speedtest_button" id="speedtest_button">Run Speedtest</button>&nbsp;<button type="submit" class="btn btn-primary" name="test_button" id="test_button">Run Test</button>&nbsp;
-  <div id="speedtest_result">Last speed test: Download={{ lastSpeedTest['download'] }} Mbps, Upload={{ lastSpeedTest['upload'] }} Mbps</div>
   <div class="row">
-    <div class="col-sm">
-      <select id="latencyrange">
+    <div class="col-sm-6">
+      <div id='latencychart' class='chart'”></div>
+      <select class="form-select" id="latencyrange">
         <option value="hour">Hour</option>
         <option value="day">Day</option>
         <option value="week">Week</option>
         <option value="month">Month</option>
       </select>
-      <div id='latencychart' class='chart'”></div>
     </div>
-    <div class="col">
-      <select id="speedrange">
+    <div class="col-sm-6">
+      <div id='speedchart' class='chart'”></div>
+      <select class="form-select" id="speedrange">
         <option value="hour">Hour</option>
         <option value="day">Day</option>
         <option value="week" selected>Week</option>
         <option value="month">Month</option>
-      </select>
-      <div id='speedchart' class='chart'”></div>
+      </select>      
     </div>
   </div>
-  <div class="row">
+  <div class="row py-3">
     <div class="col-sm">
       <h4>Events</h4>
       <ul class="list-group">

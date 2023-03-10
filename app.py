@@ -1,5 +1,6 @@
-import ajax, pathlib
+import ajax, pathlib, humanize
 import os, yaml, json
+from datetime import datetime, timedelta
 import logging, config as config
 import logging.handlers as handlers
 
@@ -75,7 +76,12 @@ def appStartup():
     redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
 
 @app.context_processor
-def getOnlineStatus():
+def get_last_speed_test():
+    lastspeedtest = json.loads(redis_conn.get('lastspeedtest'))
+    return dict(lastspeedcheck=lastspeedtest)
+
+@app.context_processor
+def get_online_staus():
     status = redis_conn.get('currentstate')
     if status == 'online':
         online = True
@@ -87,6 +93,11 @@ def getOnlineStatus():
 @app.context_processor
 def lastcheckdate():
     lastcheck = redis_conn.get('lastcheck')
+    lastcheck_obj = datetime.strptime(lastcheck, '%Y-%m-%d %H:%M:%S')
+
+    duration = datetime.now() - lastcheck_obj
+    lastcheck = humanize.naturaldelta(timedelta(seconds=duration.total_seconds())) + " ago"
+
     return dict(lastcheckdate=lastcheck)
 
 # ------------------ ROUTES  ------------------ 

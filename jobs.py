@@ -51,7 +51,7 @@ def scheduledCheckConnection():
         # Check connection.
         checkResult = checkConnection(hosts)
         
-        if checkResult[0] == 'Success' or checkResult[0] == 'Partial':
+        if checkResult[0] == 'success' or checkResult[0] == 'partial':
             # We are ONLINE
             logger.info("Connection test " + checkResult[0] + " : Pinged hosts " + str(hosts))
             storeMonitorValue('pingResult', checkResult[1])
@@ -97,6 +97,16 @@ def scheduledCheckConnection():
                 eventDict['offline_timedate'] = getDateNow()
                 eventDict['checks'] = []
                 
+                # --------------------- RE-CHECK HOSTS USED FOR CONNECTION ---------------------
+                try:
+                    checkResult = checkConnection(hosts)
+                    checkSuccess = True
+                    if checkResult[0] == 'failed':
+                        checkSuccess = False
+                    eventDict['checks'].append(["Host check/s failed", getDateNow(), checkSuccess, checkResult[1]])
+                except Exception as e:
+                    eventDict['checks'].append(["Exception in pinging hosts used to check connection", getDateNow(), False, e.args])
+
                 # --------------------- LOCAL INTERFACE CHECK ---------------------
                 try:
                     # Is the local interface working?
@@ -121,7 +131,7 @@ def scheduledCheckConnection():
                 # --------------------- DNS CHECK ---------------------
                 try:
                     for host in hosts:
-                        eventDict['checks'].append(checkDNSServers(host))
+                        eventDict['checks'].append(checkDNSServers(host[0]))
                 except Exception as e:
                     eventDict['checks'].append(["Exception in DNS check", getDateNow(), False, e.args])
 
@@ -136,7 +146,7 @@ def scheduledCheckConnection():
 
                 logger.error("Connection test failed")
 
-                # Store data
+                # --------------------- CREATE EVENT ---------------------
                 createEvent(eventDict)
                 redis_conn.set('last_eventid', eventDict['id'])
                 redis_conn.set('last_eventdate', eventDict['offline_timedate'])   

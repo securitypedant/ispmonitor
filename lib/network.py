@@ -41,12 +41,12 @@ def checkDefaultGateway():
 
         pingReturn = os_ping(default_gateway, 1, 'local')
 
-        if not pingReturn or pingReturn is None:
+        if pingReturn['response'] == 'failed':
             pingSuccess = False
-            returnMessage = default_gateway + " didn't reply: " + str(pingReturn)    
+            returnMessage = default_gateway + " didn't reply: " + pingReturn['response_reason']   
         else:
             pingSuccess = True
-            returnMessage = default_gateway + " response: " + str(round(pingReturn))
+            returnMessage = default_gateway + " response: " + pingReturn['timing'][0] + " ms"
 
     return ["Gateway Status", getDateNow(), pingSuccess, returnMessage]
 
@@ -80,14 +80,14 @@ def checkConnection(hosts):
         # Ping the host once,
         pingReturn = os_ping(hostname, 1, hosttype)
 
-        # ['Success',[[google.com, 35, 'Success'][bbc.co.uk, 20, 'Success']]]
-        # ['Partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'CannotResolve']]]
-        # ['Failed',[[google.com, 0, 'Timeout'][bbc.co.uk, 0, 'Timeout']]]
+        # ['success',[[google.com, 35, 'Success'][bbc.co.uk, 20, 'Success']]]
+        # ['partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'CannotResolve']]]
+        # ['failed',[[google.com, 0, 'Timeout'][bbc.co.uk, 0, 'Timeout']]]
 
         if pingReturn['response'] == 'success':
             # Host is reachable
             logger.debug("Success reaching " + hostname)
-            pingReturnDict.append([hostname, pingReturn['timing'][0], 'Success'])
+            pingReturnDict.append([hostname, float(pingReturn['timing'][0]), 'success'])
         elif pingReturn['response'] == 'failed':
             # False when Ping cannot resolve hostname
             logger.warning(pingReturn['response_reason'] + ":" + hostname + " code:" + str(pingReturn['code']))
@@ -95,13 +95,13 @@ def checkConnection(hosts):
             failedHosts = failedHosts + 1
 
     if failedHosts == 0:
-        returnDict = ['Success',pingReturnDict]
+        returnDict = ['success',pingReturnDict]
     elif failedHosts == len(hosts):
         # All hosts failed to return a response.
-        returnDict = ['Failed',pingReturnDict]
+        returnDict = ['failed',pingReturnDict]
     else:
         # At least one host failed to respond.
-        returnDict = ['Partial',pingReturnDict]
+        returnDict = ['partial',pingReturnDict]
         
     return returnDict
 
@@ -111,18 +111,18 @@ def checkNetworkHops(hops):
     traceroute_success = True
     for hop in hops:
         if checkNetworkIP4Address(hop):
-            hop_check_result.append("Success:" + str(hop))
+            hop_check_result.append("success:" + str(hop))
         else:
-            hop_check_result.append("Failed:" + str(hop))
+            hop_check_result.append("failed:" + str(hop))
             traceroute_success = False
 
     return ["Traceroute results", getDateNow(), traceroute_success, hop_check_result]
 
 def checkNetworkIP4Address(hop):
     """ Try to contact an IP4 network address and determine if we can communicate with it. """
-    ping_return = ping(hop)
+    ping_return = os_ping(hop)
 
-    if not ping_return or ping_return is None:
+    if ping_return == 'failed':
         # Ping failed
         return False
     else:
@@ -181,6 +181,9 @@ def os_ping(host, count=4, type='inet'):
         local = A LAN or very close WAN address we expect to be millisecond in response.
     """
     returnDict = {}
+    returnDict['host'] = host
+    returnDict['hosttype'] = type
+    returnDict['pingcount'] = count
 
     if config.osType == "Darwin":
         if type == 'local':

@@ -31,8 +31,16 @@
       {% for eventRecord in event['checks'] %}
       <tr class="{% if eventRecord[2] %}table-success{% else %}table-danger{% endif %}">
         <td class="col-2">{{ eventRecord[1] }}</th>
-        <td class="col-2">{{ eventRecord[0] }}</td>
+        <td class="col-3">{{ eventRecord[0] }}</td>
+        {% if eventRecord[3] is iterable and (eventRecord[3] is not string and eventRecord[3] is not mapping) %}
+        <td>
+          {% for record in eventRecord[3] %}
+            <div>{{ record }}</div>
+          {% endfor %}
+        </td>
+        {% else %}
         <td>{{ eventRecord[3] }}</td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>

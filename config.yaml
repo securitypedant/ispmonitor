@@ -1,4 +1,4 @@
-checknetconfigjobstatus: pause
+checknetconfigjobstatus: run
 connectionmonitorjobstatus: run
 datetimeformat: '%Y-%m-%d %H:%M:%S'
 defaultinterface: en0
@@ -8,7 +8,7 @@ hosts:
 - - bbc.co.uk
   - inet
 logginglevel: INFO
-netconfigtestfreq: 10
+netconfigtestfreq: 60
 pollfreq: 10
 speedtestfreq: 60
 speedtestjobstatus: pause

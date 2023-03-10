@@ -31,7 +31,7 @@ def ajaxspeedtest():
         speedTestResultsList = [intDownloadSpeed, intUploadSpeed]
         storeMonitorValue('speedtestResult', speedTestResultsList)
 
-        speedTestDisplay = "Last speed test: Download=" + str(intDownloadSpeed) + " MB/s, Upload=" + str(intUploadSpeed) + " MB/s"
+        speedTestDisplay = "Down=" + str(intDownloadSpeed) + " Mbps, Up=" + str(intUploadSpeed) + " Mbps"
         return jsonify(speedTestDisplay)
     else:
         return jsonify("Speed test already running")
