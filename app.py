@@ -43,13 +43,6 @@ redis_conn.set('jobIDCheckNetConfig', jobCheckNetConfig.id)
 
 @app.before_first_request
 def appStartup():
-
-    logger.setLevel(get_configValue("logginglevel"))
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
-    logHandler.setLevel(get_configValue("logginglevel"))
-    logHandler.setFormatter(formatter)
-    logger.addHandler(logHandler)
     
     # Check if required folders exist.
     if not os.path.exists("logs"):
@@ -61,19 +54,27 @@ def appStartup():
     if not os.path.exists("graphdata"):
         os.makedirs("graphdata")
 
-    networkhops = traceroute(redis_conn.get('traceTargetHost'))[3]
-    redis_conn.set('networkhops', json.dumps(networkhops))
-
     redis_conn.set('isspeedtestrunning', 'no')
     redis_conn.set('isnetconfigjobrunning', 'no')
     redis_conn.set('currentstate', 'online')
     redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
     redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
     redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
-    
     redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
     redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
+    redis_conn.set('lastspeedtest', json.dumps({"ping":"0", "download": "0", "upload": "0", "server":"None"}))
+
+    redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
     redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
+    networkhops = traceroute(redis_conn.get('traceTargetHost'))[3]
+    redis_conn.set('networkhops', json.dumps(networkhops))    
+
+    logger.setLevel(get_configValue("logginglevel"))
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler.setLevel(get_configValue("logginglevel"))
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
 
 @app.context_processor
 def get_last_speed_test():

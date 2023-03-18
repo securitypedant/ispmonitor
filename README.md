@@ -2,6 +2,11 @@
 
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
+FIXME
+- Investigate problems with bandwidth graphing. I think it's because multiple files are being read but not in date order.
+- Sort list order of monitor logs and also delete logs over X days.
+- Investigate why en0 is still being referenced.
+
 TODO
 Version 1.0 Release
 - Create docs and setup.sh
