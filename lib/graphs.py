@@ -60,12 +60,12 @@ def getGraphData(timeFrame, type, title, yaxis_title, legend_title):
             xRef = "datetime"
 
             for item in graphData:
-                for key, value in item.items():
-                    newgraphData['datetime'].append(key)
-                    for latency in value:
-                        if latency[0] not in newgraphData:
-                            newgraphData[latency[0]] = []
-                        newgraphData[latency[0]].append(latency[1])
+                newgraphData['datetime'].append(item['date'])
+                data = item['data']
+                for latency in data:
+                    if latency[0] not in newgraphData:
+                        newgraphData[latency[0]] = []
+                    newgraphData[latency[0]].append(latency[1])
 
             dataFrame = pd.DataFrame(newgraphData)
 
@@ -83,11 +83,9 @@ def getGraphData(timeFrame, type, title, yaxis_title, legend_title):
             stUpyVals = []
 
             for speedTestDict in graphData:
-                key = list(speedTestDict.keys())
-                value = speedTestDict[key[0]]
-                stxVals.append(key[0])
-                stDownyVals.append(int(value[0]))
-                stUpyVals.append(int(value[1]))
+                stxVals.append(speedTestDict['date'])
+                stDownyVals.append(int(speedTestDict['data'][0]))
+                stUpyVals.append(int(speedTestDict['data'][1]))
 
             dataFrame = pd.DataFrame({'datetime':stxVals,'Download':stDownyVals,'Upload':stUpyVals})
 

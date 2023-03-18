@@ -66,7 +66,7 @@ def createEventDict(file):
         
 def storeMonitorValue(type, value):
     now = datetime.now()
-    dictItem = {getDateNow():value}
+    dictItem = {"date":getDateNow(),"data":value}
 
     filename = str(now.date()) + "-" + type + '.json'
     with open(pathlib.Path(redis_conn.get('graphdatafolder')) / filename, 'a') as file:
@@ -88,8 +88,10 @@ def readMonitorValues(type, range='hour'):
         with open(filename, 'r') as file:
             for line in file:
                 listOfValues.append(json.loads(line))
+    
+    sortedValues = sorted(listOfValues, key=lambda x: x["date"])
 
-    return listOfValues
+    return sortedValues
 
 def getLastSpeedTest():
     try:
