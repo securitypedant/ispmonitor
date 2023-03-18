@@ -88,8 +88,11 @@ def readMonitorValues(type, range='hour'):
         with open(filename, 'r') as file:
             for line in file:
                 listOfValues.append(json.loads(line))
-    
-    sortedValues = sorted(listOfValues, key=lambda x: x["date"])
+
+    if listOfValues == []:
+        sortedValues = {}
+    else:
+        sortedValues = sorted(listOfValues, key=lambda x: x["date"])
 
     return sortedValues
 
