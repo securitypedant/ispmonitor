@@ -42,7 +42,7 @@ def scheduledSpeedTest():
 
 def scheduledCheckConnection():
     redis_conn = getRedisConn()
-    if redis_conn.get('isnetconfigjobrunning') == "no":
+    if redis_conn.get('isnetconfigjobrunning') == "no" and redis_conn.get('isspeedtestrunning') == "no":
 
         hosts = get_configValue("hosts")
         logger.debug("Attempting to reach " + str(hosts))
