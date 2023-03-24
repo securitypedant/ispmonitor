@@ -72,7 +72,6 @@ def checkConnection(hosts):
 
     for host in hosts:
     # Ping target to determine if network is available.
-
         hostname = host[0]
         hosttype = host[1]
         logger.debug("Pinging " + hostname)

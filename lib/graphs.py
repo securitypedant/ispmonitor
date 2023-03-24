@@ -8,12 +8,12 @@ from datetime import datetime, timedelta
 redis_conn = getRedisConn()
 
 def getLatencyGraphData(timeFrame):
-    graphData = getGraphData(timeFrame, 'pingResult', "Connection latency", "Latency in ms", "Hosts: ")
+    graphData = getGraphData(timeFrame, 'pingResult', "", "Latency in ms", "Hosts: ")
 
     return graphData
 
 def getSpeedtestGraphData(timeFrame):
-    graphData = getGraphData(timeFrame, 'speedtestResult', "Connection speed", "Speed in Mbps", "Bandwidth: ")
+    graphData = getGraphData(timeFrame, 'speedtestResult', "", "Speed in Mbps", "Bandwidth: ")
 
     return graphData
 

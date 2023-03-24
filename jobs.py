@@ -65,24 +65,24 @@ def scheduledCheckConnection():
                 
                 # Run speedtest
                 speedTest = runSpeedtest()
-                udpateEvent = {}
-                udpateEvent['onlineping'] = speedTest.results.ping
-                udpateEvent['downspeed'] = speedTest.results.download
-                udpateEvent['upspeed'] = speedTest.results.upload
-                udpateEvent['currentState'] = "online"
+                updateEventDict = {}
+                updateEventDict['onlineping'] = speedTest.results.ping
+                updateEventDict['downspeed'] = speedTest.results.download
+                updateEventDict['upspeed'] = speedTest.results.upload
+                updateEventDict['currentState'] = "online"
 
                 # Update event
-                updateEvent(redis_conn.get('last_eventid'), udpateEvent)
+                updateEvent(redis_conn.get('last_eventid'), updateEventDict)
         else:
             # We are OFFLINE
             # Were we previously offline?
             if redis_conn.get('currentstate') == 'offline':
                 # We are STILL OFFLINE
-                #event = getEvent(redis_conn.get('last_eventdate') + "-" + redis_conn.get('last_eventid'))
-                logger.error("We are still offline:Internet connection down")
+                # event = getEvent(redis_conn.get('last_eventdate') + "-" + redis_conn.get('last_eventid'))
+                logger.error("Connection is still offline: Internet connection down")
             else:
                 # We just WENT OFFLINE
-                logger.error("We just went offline")
+                logger.error("Connection just went offline")
                 redis_conn.set('currentstate', 'offline')
 
                 # Create a dict to store all the information about the event.
@@ -97,15 +97,8 @@ def scheduledCheckConnection():
                 eventDict['offline_timedate'] = getDateNow()
                 eventDict['checks'] = []
                 
-                # --------------------- RE-CHECK HOSTS USED FOR CONNECTION ---------------------
-                try:
-                    checkResult = checkConnection(hosts)
-                    checkSuccess = True
-                    if checkResult[0] == 'failed':
-                        checkSuccess = False
-                    eventDict['checks'].append(["Host check/s failed", getDateNow(), checkSuccess, checkResult[1]])
-                except Exception as e:
-                    eventDict['checks'].append(["Exception in pinging hosts used to check connection", getDateNow(), False, e.args])
+                # --------------------- STORE HOSTS USED FOR CONNECTION ---------------------
+                eventDict['checks'].append(["Host check/s failed", getDateNow(), False, checkResult[1]])
 
                 # --------------------- LOCAL INTERFACE CHECK ---------------------
                 try:

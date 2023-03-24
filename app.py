@@ -35,7 +35,7 @@ if get_configValue("connectionmonitorjobstatus") == "pause":
 if get_configValue("speedtestjobstatus") == "pause":
     jobSpeedTest.pause()
 if get_configValue("checknetconfigjobstatus") == "pause":
-    jobCheckNetConfig.pause()    
+    jobCheckNetConfig.pause()
 
 redis_conn.set('jobIDCheckConnection', jobCheckConnection.id)
 redis_conn.set('jobIDSpeedTest', jobSpeedTest.id)
@@ -57,6 +57,7 @@ def appStartup():
     redis_conn.set('isspeedtestrunning', 'no')
     redis_conn.set('isnetconfigjobrunning', 'no')
     redis_conn.set('currentstate', 'online')
+    redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
     redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
     redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
     redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
@@ -117,6 +118,11 @@ def lastcheckdate():
     return dict(lastcheckdate=lastcheck)
 
 # ------------------ ROUTES  ------------------ 
+app.add_url_rule('/ajax/checkinterface', view_func=ajax.ajax_checkinterface)
+app.add_url_rule('/ajax/checkdefaultroute', view_func=ajax.ajax_checkdefaultroute)
+app.add_url_rule('/ajax/checkdns', view_func=ajax.ajax_checkdns)
+app.add_url_rule('/ajax/traceroute', view_func=ajax.ajax_traceroute)
+
 app.add_url_rule('/ajax/runspeedtest', view_func=ajax.ajaxspeedtest)
 app.add_url_rule('/ajax/listspeedtestservers', view_func=ajax.ajaxListSpeedtestServers)
 app.add_url_rule('/ajax/getgraphdata', view_func=ajax.getGraphData)
@@ -172,6 +178,10 @@ def event():
     eventid = request.args.get("eventid")
     eventdict = createEventDict(eventid)
     return render_template("event.html", event=eventdict)
+
+@app.route("/tools", methods=['GET', 'POST'])
+def tools():
+    return render_template("tools.html")
 
 @app.route("/config", methods=['GET', 'POST'])
 def config():
