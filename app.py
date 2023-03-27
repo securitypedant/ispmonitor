@@ -142,15 +142,21 @@ def home():
         if os.path.isfile(path):
             eventfiles.append(filename)
 
+
+
     for filename in os.listdir(logFolder):
         path = os.path.join(logFolder, filename)
         if os.path.isfile(path):
             logfiles.append(filename)
 
+    sorted_logfilelist = sorted(logfiles, key=lambda x: os.path.getmtime(os.path.join(logFolder, x)), reverse=True)
+
     # Get data from each event
     for file in eventfiles:
         events.append(createEventDict(file))
     
+    sorted_events = sorted(events, key=lambda x: datetime.strptime(x['offline_timedate'], get_configValue('datetimeformat')), reverse=True)
+
     # Create graphJSON data
     ltgraphJSON = getLatencyGraphData('hour')
     stgraphJSON= getSpeedtestGraphData('week')
@@ -158,12 +164,12 @@ def home():
 
     return render_template(
         "home.html",
-        events=events,
+        events=sorted_events,
         isSpeedTestRunning=redis_conn.get('isspeedtestrunning'),
         ltgraphJSON=ltgraphJSON,
         stgraphJSON=stgraphJSON,
         lastSpeedTest=lastSpeedTest,
-        logfiles=logfiles
+        logfiles=sorted_logfilelist
     )
 
 @app.route("/log")
