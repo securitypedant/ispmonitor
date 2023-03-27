@@ -1,4 +1,5 @@
 # ispmonitor
+![Monitor screenshot](https://user-images.githubusercontent.com/11550089/228054835-cceb16aa-03b6-4665-8e00-0009cb987ec6.png)
 
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
