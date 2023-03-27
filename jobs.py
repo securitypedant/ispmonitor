@@ -1,7 +1,7 @@
 import logging, uuid, config as config, json
 from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers, checkNetworkHops
 from config import get_configValue
-from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow
+from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow, appendEvent
 from datetime import datetime
 from lib.redis_server import getRedisConn
 
@@ -80,6 +80,13 @@ def scheduledCheckConnection():
                 # We are STILL OFFLINE
                 # event = getEvent(redis_conn.get('last_eventdate') + "-" + redis_conn.get('last_eventid'))
                 logger.error("Connection is still offline: Internet connection down")
+                checkResult = checkConnection(hosts)
+                if checkResult[0] == 'success' or checkResult[0] == 'partial':
+                    result = True
+                else:
+                    result = False
+
+                appendEvent(redis_conn.get('last_eventid'), "Host check during event", getDateNow(), result, checkResult[1])
             else:
                 # We just WENT OFFLINE
                 logger.error("Connection just went offline")

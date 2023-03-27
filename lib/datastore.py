@@ -31,6 +31,19 @@ def getEvent(filename):
 
     return event
 
+def appendEvent(eventID, message, datetime, result, data):
+    # redis_conn.get('last_eventid'), ["Host check during event", getDateNow(), result, checkResult[1]]
+        with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / eventID, 'r') as json_file:
+            # Reading from json file
+            json_object = json.load(json_file)
+
+            json_object['checks'].append([message, datetime, result, data])
+
+        with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / str(eventID), 'w') as file:
+            json_towrite = json.dumps(json_object)
+            file.write(str(json_towrite))
+
+
 def updateEvent(filename, event):
     json_object = ""
     # FIXME Handle files not existing.
