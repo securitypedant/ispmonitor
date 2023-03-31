@@ -31,7 +31,7 @@ def checkDNSServers(host):
 
     return ["DNS Server Status for " + host, getDateNow(), dns_checks_success, "DNS server response " + str(dns_check_result)]
 
-def checkDefaultGateway():
+def checkDefaultGateway(num_pings=1):
     gateways = netifaces.gateways()
     if gateways['default'] == {}:
         pingSuccess = False
@@ -39,7 +39,7 @@ def checkDefaultGateway():
     else:
         default_gateway = gateways['default'][netifaces.AF_INET][0]
 
-        pingReturn = os_ping(default_gateway, 1, 'local')
+        pingReturn = os_ping(default_gateway, num_pings, 'local')
 
         if pingReturn['response'] == 'failed':
             pingSuccess = False
@@ -203,8 +203,11 @@ def os_ping(host, count=4, type='inet'):
     if ping_output.returncode == 0:
         returnDict['response'] = "success"
         returnDict['response_reason'] = "success"
-        # extract the response time from the output
-        pattern = r"time=([\d.]+) ms"
+        # extract the response time from the output, depends on platform.
+        if config.osType == "Darwin":
+            pattern = r"time=([\d.]+) ms"
+        else:
+            pattern = r"Average = ([\d.]+)ms"
         response_times = re.findall(pattern, ping_output.stdout)
         returnDict['timing'] = response_times
         response_times_floats = [float(num) for num in response_times]

@@ -26,7 +26,7 @@ def ajax_checkinterface():
     return checkLocalInterface(defaultInterface)
 
 def ajax_checkdefaultroute():
-    return checkDefaultGateway()
+    return checkDefaultGateway(8)
 
 def ajax_checkdns():
     hosts = get_configValue("hosts")
