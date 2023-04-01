@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from lib.network import runSpeedtest, checkDefaultGateway, checkNetworkHops, checkLocalInterface, checkDNSServers
+from lib.network import run_osSpeedtest, checkDefaultGateway, checkNetworkHops, checkLocalInterface, checkDNSServers
 from lib.datastore import storeMonitorValue
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 import redis, speedtest, json
@@ -26,7 +26,7 @@ def ajax_checkinterface():
     return checkLocalInterface(defaultInterface)
 
 def ajax_checkdefaultroute():
-    return checkDefaultGateway()
+    return checkDefaultGateway(8)
 
 def ajax_checkdns():
     hosts = get_configValue("hosts")
@@ -44,7 +44,7 @@ def ajax_traceroute():
 def ajaxspeedtest():
     redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no":
-        speedTestResults = runSpeedtest()
+        speedTestResults = run_osSpeedtest()
         
         intDownloadSpeed = round(speedTestResults.results.download / 1000 / 1000, 1)
         intUploadSpeed = round(speedTestResults.results.upload / 1000 / 1000, 1)

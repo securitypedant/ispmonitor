@@ -31,7 +31,7 @@ def checkDNSServers(host):
 
     return ["DNS Server Status for " + host, getDateNow(), dns_checks_success, "DNS server response " + str(dns_check_result)]
 
-def checkDefaultGateway():
+def checkDefaultGateway(num_pings=1):
     gateways = netifaces.gateways()
     if gateways['default'] == {}:
         pingSuccess = False
@@ -39,7 +39,7 @@ def checkDefaultGateway():
     else:
         default_gateway = gateways['default'][netifaces.AF_INET][0]
 
-        pingReturn = os_ping(default_gateway, 1, 'local')
+        pingReturn = os_ping(default_gateway, num_pings, 'local')
 
         if pingReturn['response'] == 'failed':
             pingSuccess = False
@@ -203,8 +203,11 @@ def os_ping(host, count=4, type='inet'):
     if ping_output.returncode == 0:
         returnDict['response'] = "success"
         returnDict['response_reason'] = "success"
-        # extract the response time from the output
-        pattern = r"time=([\d.]+) ms"
+        # extract the response time from the output, depends on platform.
+        if config.osType == "Darwin":
+            pattern = r"time=([\d.]+) ms"
+        else:
+            pattern = r"Average = ([\d.]+)ms"
         response_times = re.findall(pattern, ping_output.stdout)
         returnDict['timing'] = response_times
         response_times_floats = [float(num) for num in response_times]
@@ -222,6 +225,26 @@ def os_ping(host, count=4, type='inet'):
     returnDict['code'] = ping_output.returncode
     return returnDict
 
+def run_osSpeedtest():
+    """ Run a speedtest using the Ookla CLI tool, which allows returning results as json """
+    redis_conn.set('isspeedtestrunning', 'yes')
+
+    logger.debug("Starting speedtest")
+    speedtestserverid = get_configValue('speedtestserverid')
+    
+    if speedtestserverid != 'Any':
+        serverIDcmd = "-s " + speedtestserverid
+    else:
+        serverIDcmd = ""
+    
+    output = subprocess.check_output(["speedtest", serverIDcmd, "--format=json"])
+
+    result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
+    redis_conn.set('lastspeedtest', json.dumps({"ping":ping, "download": download, "upload": upload, "server":server}))
+    logger.debug("Speedtest results: " + result)
+
+    redis_conn.set('isspeedtestrunning', 'no')
+
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
     # 18531 - Wave in San Francisco, CA
@@ -232,14 +255,13 @@ def runSpeedtest():
     speedtestserverid = get_configValue('speedtestserverid')
 
     st = speedtest.Speedtest(secure=1)
-    speedtestServer = ""
 
-    if speedtestserverid == 'Any':
-        speedtestServer = st.get_best_server()
-    else:
+    if speedtestserverid != 'Any':
         servers = [speedtestserverid]
         # TODO: Fix the speedtest.NoMatchedServers error. 
-        speedtestServer = st.get_servers(servers)
+        st.get_servers(servers)
+
+    st.get_best_server()
 
     ping = st.results.ping
     download = round(st.download() / 1000 / 1000, 2)
