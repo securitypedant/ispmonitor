@@ -225,6 +225,26 @@ def os_ping(host, count=4, type='inet'):
     returnDict['code'] = ping_output.returncode
     return returnDict
 
+def run_osSpeedtest():
+    """ Run a speedtest using the Ookla CLI tool, which allows returning results as json """
+    redis_conn.set('isspeedtestrunning', 'yes')
+
+    logger.debug("Starting speedtest")
+    speedtestserverid = get_configValue('speedtestserverid')
+    
+    if speedtestserverid != 'Any':
+        serverIDcmd = "-s " + speedtestserverid
+    else:
+        serverIDcmd = ""
+    
+    output = subprocess.check_output(["speedtest", serverIDcmd, "--format=json"])
+
+    result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
+    redis_conn.set('lastspeedtest', json.dumps({"ping":ping, "download": download, "upload": upload, "server":server}))
+    logger.debug("Speedtest results: " + result)
+
+    redis_conn.set('isspeedtestrunning', 'no')
+
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki
     # 18531 - Wave in San Francisco, CA
@@ -235,14 +255,13 @@ def runSpeedtest():
     speedtestserverid = get_configValue('speedtestserverid')
 
     st = speedtest.Speedtest(secure=1)
-    speedtestServer = ""
 
-    if speedtestserverid == 'Any':
-        speedtestServer = st.get_best_server()
-    else:
+    if speedtestserverid != 'Any':
         servers = [speedtestserverid]
         # TODO: Fix the speedtest.NoMatchedServers error. 
-        speedtestServer = st.get_servers(servers)
+        st.get_servers(servers)
+
+    st.get_best_server()
 
     ping = st.results.ping
     download = round(st.download() / 1000 / 1000, 2)
