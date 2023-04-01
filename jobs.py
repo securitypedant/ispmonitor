@@ -1,5 +1,5 @@
 import logging, uuid, config as config, json
-from lib.network import traceroute, runSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers, checkNetworkHops
+from lib.network import traceroute, run_osSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers, checkNetworkHops
 from config import get_configValue
 from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow, appendEvent
 from datetime import datetime
@@ -33,8 +33,8 @@ def scheduledSpeedTest():
     redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no":
         logger.debug("Running speed test")
-        speedTestResults = runSpeedtest()
-        speedTestResultsList = [round(speedTestResults.results.download / 1000 / 1000, 1), round(speedTestResults.results.upload / 1000 / 1000, 1)]
+        speedTestResults = run_osSpeedtest()
+        speedTestResultsList = [round(speedTestResults['download']['bytes'] / 1000 / 1000, 1), round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)]
 
         storeMonitorValue('speedtestResult', speedTestResultsList)
     else:
@@ -64,11 +64,11 @@ def scheduledCheckConnection():
                 redis_conn.set('currentstate', 'online')
                 
                 # Run speedtest
-                speedTest = runSpeedtest()
+                speedTest = run_osSpeedtest()
                 updateEventDict = {}
-                updateEventDict['onlineping'] = speedTest.results.ping
-                updateEventDict['downspeed'] = speedTest.results.download
-                updateEventDict['upspeed'] = speedTest.results.upload
+                updateEventDict['onlineping'] = speedTest['ping']['latency']
+                updateEventDict['downspeed'] = speedTest['download']['bytes']
+                updateEventDict['upspeed'] = speedTest['upload']['bytes']
                 updateEventDict['currentState'] = "online"
 
                 # Update event

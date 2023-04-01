@@ -1,5 +1,5 @@
 import subprocess, logging, json, config as config
-import speedtest, logging, psutil, re
+import logging, psutil, re
 from ping3 import ping
 import redis, netifaces, dns.resolver
 from config import get_configValue
@@ -233,17 +233,20 @@ def run_osSpeedtest():
     speedtestserverid = get_configValue('speedtestserverid')
     
     if speedtestserverid != 'Any':
-        serverIDcmd = "-s " + speedtestserverid
+        serverIDcmd = speedtestserverid
     else:
         serverIDcmd = ""
     
-    output = subprocess.check_output(["speedtest", serverIDcmd, "--format=json"])
+    output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
+    output_string = json.loads(output_bytes.decode('utf-8'))
 
-    result = "Ping:" + str(ping) + " Down: " + str(download) + " Up: " + str(upload) + " Server: " + str(server)
-    redis_conn.set('lastspeedtest', json.dumps({"ping":ping, "download": download, "upload": upload, "server":server}))
+    result = "Ping:" + str(output_string['ping']['latency']) + " Down: " + str(output_string['download']['bytes']) + " Up: " + str(output_string['upload']['bytes']) + " Server: " + output_string['server']['host']
+    redis_conn.set('lastspeedtest', json.dumps({"ping": str(output_string['ping']['latency']), "download": str(output_string['download']['bytes']), "upload": str(output_string['upload']['bytes']), "server": str(output_string['server']['host'])}))
     logger.debug("Speedtest results: " + result)
 
     redis_conn.set('isspeedtestrunning', 'no')
+
+    return output_string
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki

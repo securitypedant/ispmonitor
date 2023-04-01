@@ -10,7 +10,7 @@ hosts:
 logginglevel: INFO
 netconfigtestfreq: 86400
 pollfreq: 10
-speedtestfreq: 10800
+speedtestfreq: 60
 speedtestjobstatus: run
-speedtestserverid: Any
+speedtestserverid: '18531'
 tracetargethost: 8.8.8.8

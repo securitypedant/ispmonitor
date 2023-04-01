@@ -1,11 +1,17 @@
+import json
+import logging
+import subprocess
+
 from flask import jsonify, request
-from lib.network import run_osSpeedtest, checkDefaultGateway, checkNetworkHops, checkLocalInterface, checkDNSServers
+
+import config as config
+from config import get_configValue
 from lib.datastore import storeMonitorValue
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
-import redis, speedtest, json
-import logging, config as config
+from lib.network import (checkDefaultGateway, checkDNSServers,
+                         checkLocalInterface, checkNetworkHops,
+                         run_osSpeedtest)
 from lib.redis_server import getRedisConn
-from config import get_configValue
 
 logger = logging.getLogger(config.loggerName)
 
@@ -46,8 +52,8 @@ def ajaxspeedtest():
     if redis_conn.get('isspeedtestrunning') == "no":
         speedTestResults = run_osSpeedtest()
         
-        intDownloadSpeed = round(speedTestResults.results.download / 1000 / 1000, 1)
-        intUploadSpeed = round(speedTestResults.results.upload / 1000 / 1000, 1)
+        intDownloadSpeed = round(speedTestResults['download']['bytes'] / 1000 / 1000, 1)
+        intUploadSpeed = round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)
 
         speedTestResultsList = [intDownloadSpeed, intUploadSpeed]
         storeMonitorValue('speedtestResult', speedTestResultsList)
@@ -62,11 +68,11 @@ def ajaxListSpeedtestServers():
     servers = []
     serverResult = []
 
-    st = speedtest.Speedtest()
-    st_servers = st.get_servers(servers)
+    output_bytes = subprocess.check_output(['speedtest', "-L", "--format=json"])
+    output_string = json.loads(output_bytes.decode('utf-8'))
 
-    for serverList in st_servers:
-            serverResult.append(st_servers[serverList])
+    for serverList in output_string['servers']:
+            serverResult.append([serverList['id'], serverList['name'], serverList['host']])
 
     returnResult = jsonify(serverResult)
     
