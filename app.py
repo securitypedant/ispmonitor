@@ -1,19 +1,25 @@
-import ajax, pathlib, humanize
-import os, yaml, json
-from datetime import datetime, timedelta
-import logging, config as config
+import json
+import logging
 import logging.handlers as handlers
+import os
+import pathlib
+from datetime import datetime, timedelta
 
-from flask import Flask, render_template, request, redirect, url_for
-from lib.datastore import readMonitorValues, getLastSpeedTest, createEventDict
-from lib.network import getLocalInterfaces, traceroute
-from apscheduler.schedulers.background import BackgroundScheduler
-from config import get_configValue, set_configValue
-from jobs import scheduledCheckConnection, scheduledSpeedTest, scheduledCheckNetworkConfig
-from lib.redis_server import getRedisConn
-from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
-
+import humanize
 import redis
+import yaml
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, redirect, render_template, request, url_for
+
+import ajax
+import config as config
+from config import get_configValue, set_configValue
+from jobs import (scheduledCheckConnection, scheduledCheckNetworkConfig,
+                  scheduledSpeedTest)
+from lib.datastore import createEventDict, getLastSpeedTest
+from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
+from lib.network import getLocalInterfaces, traceroute
+from lib.redis_server import getRedisConn
 
 app = Flask(__name__)
 # Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
