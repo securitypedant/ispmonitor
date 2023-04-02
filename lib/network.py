@@ -204,7 +204,7 @@ def os_ping(host, count=4, type='inet'):
         returnDict['response'] = "success"
         returnDict['response_reason'] = "success"
         # extract the response time from the output, depends on platform.
-        if config.osType == "Darwin":
+        if config.osType == "Darwin" or config.osType == "Linux":
             pattern = r"time=([\d.]+) ms"
         else:
             pattern = r"Average = ([\d.]+)ms"
