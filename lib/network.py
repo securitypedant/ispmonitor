@@ -240,8 +240,12 @@ def run_osSpeedtest():
     output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
     output_string = json.loads(output_bytes.decode('utf-8'))
 
-    result = "Ping:" + str(output_string['ping']['latency']) + " Down: " + str(output_string['download']['bytes']) + " Up: " + str(output_string['upload']['bytes']) + " Server: " + output_string['server']['host']
-    redis_conn.set('lastspeedtest', json.dumps({"ping": str(output_string['ping']['latency']), "download": str(output_string['download']['bytes']), "upload": str(output_string['upload']['bytes']), "server": str(output_string['server']['host'])}))
+    result = "Ping:" + str(output_string['ping']['latency']) + " Down: " + str(output_string['download']['bytes'] / 1000 / 1000) + " Up: " + str(output_string['upload']['bytes'] / 1000 / 1000) + " Server: " + output_string['server']['host']
+    redis_conn.set('lastspeedtest', json.dumps({"ping": str(output_string['ping']['latency']), 
+                                                "download": str(round(output_string['download']['bytes'] / 1000 / 1000, 2)), 
+                                                "upload": str(round(output_string['upload']['bytes'] / 1000 / 1000, 2)), 
+                                                "server": str(output_string['server']['host'])})
+                                                )
     logger.debug("Speedtest results: " + result)
 
     redis_conn.set('isspeedtestrunning', 'no')
