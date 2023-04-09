@@ -44,6 +44,9 @@ def appendEvent(eventID, message, datetime, result, data):
             file.write(str(json_towrite))
 
 
+def deleteEvent(eventid):
+    os.remove(redis_conn.get('eventsdatafolder') + "/" + eventid)
+
 def updateEvent(filename, event):
     json_object = ""
     # FIXME Handle files not existing.
@@ -56,8 +59,10 @@ def updateEvent(filename, event):
     json_object['upspeed'] = event['upspeed']
     json_object['online_timedate'] = event['online_timedate']
     json_object['currentState'] = event['currentState']
-    json_object['notes'] = event['notes']
-    json_object['reason'] = event['reason']
+    if 'notes' in event:
+        json_object['notes'] = event['notes']
+    if 'reason' in event:
+        json_object['reason'] = event['reason']
     
     # Figure out downtime
     offlineStart = datetime.strptime(json_object["offline_timedate"], "%Y-%m-%d %H:%M:%S")

@@ -16,7 +16,8 @@ import config as config
 from config import get_configValue, set_configValue
 from jobs import (scheduledCheckConnection, scheduledCheckNetworkConfig,
                   scheduledSpeedTest)
-from lib.datastore import createEventDict, getLastSpeedTest, updateEvent
+from lib.datastore import (createEventDict, deleteEvent, getLastSpeedTest,
+                           updateEvent)
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 from lib.network import getLocalInterfaces, traceroute
 from lib.redis_server import getRedisConn
@@ -188,15 +189,18 @@ def log():
 @app.route("/event", methods=['GET', 'POST'])
 def event():
     if request.method == 'POST':
-        # Save title and notes to event and then return home.
-        with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / request.form['eventid'], 'r') as json_file:
-            # Reading from json file
-            json_object = json.load(json_file)
-            json_object['notes'] = request.form['notes']
-            json_object['reason'] = request.form['reason']
-            updateEvent(request.form['eventid'], json_object)
-
-            return redirect(url_for('home'))
+        if 'save' in request.form:
+            # Save title and notes to event and then return home.
+            with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / request.form['eventid'], 'r') as json_file:
+                # Reading from json file
+                json_object = json.load(json_file)
+                json_object['notes'] = request.form['notes']
+                json_object['reason'] = request.form['reason']
+                updateEvent(request.form['eventid'], json_object)
+        elif 'delete' in request.form:
+            # Delete the event record.    
+            deleteEvent(request.form['eventid'])
+        return redirect(url_for('home'))
     else:
         eventid = request.args.get("eventid")
         eventdict = createEventDict(eventid)
