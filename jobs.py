@@ -70,7 +70,8 @@ def scheduledCheckConnection():
                 updateEventDict['downspeed'] = speedTest['download']['bytes']
                 updateEventDict['upspeed'] = speedTest['upload']['bytes']
                 updateEventDict['currentState'] = "online"
-
+                updateEventDict['online_timedate'] = getDateNow()
+                
                 # Update event
                 updateEvent(redis_conn.get('last_eventid'), updateEventDict)
         else:
@@ -95,7 +96,7 @@ def scheduledCheckConnection():
                 # Create a dict to store all the information about the event.
                 eventDict = {}
                 eventDict['id'] = str(uuid.uuid4())
-                eventDict['currentState'] = "offline"
+                eventDict['currentState'] = 'offline'
                 eventDict['reason'] = 'Unknown'
                 eventDict['total_downtime'] = 0
                 eventDict['downspeed'] = 0
@@ -103,6 +104,7 @@ def scheduledCheckConnection():
                 eventDict['onlineping'] = 0
                 eventDict['offline_timedate'] = getDateNow()
                 eventDict['checks'] = []
+                eventDict['notes'] = ''
                 
                 # --------------------- STORE HOSTS USED FOR CONNECTION ---------------------
                 eventDict['checks'].append(["Host check/s failed", getDateNow(), False, checkResult[1]])
@@ -132,6 +134,8 @@ def scheduledCheckConnection():
                 try:
                     for host in hosts:
                         eventDict['checks'].append(checkDNSServers(host[0]))
+                        if eventDict['checks'][1][2] == False:
+                            eventDict['reason'] = eventDict['checks'][1][3]
                 except Exception as e:
                     eventDict['checks'].append(["Exception in DNS check", getDateNow(), False, e.args])
 
