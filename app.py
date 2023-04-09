@@ -78,7 +78,7 @@ def appStartup():
 
     logger.setLevel(get_configValue("logginglevel"))
     formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=31)
+    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=7)
     logHandler.setLevel(get_configValue("logginglevel"))
     logHandler.setFormatter(formatter)
     logger.addHandler(logHandler)
