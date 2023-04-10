@@ -4,12 +4,10 @@
 This is a work in progress project. The final version will be a fully hostable ISP monitoring tool.
 
 FIXME
-- Fix speed test to use the same server each time
 - Fix windows Ping function
-- Delete log files over a certain date
 - Improve tools page formatting
 - Reverse order of data in graph
-- Investigate why en0 is still being referenced.
+- Secure Redis connection with username/pass and store securely in Flask
 
 TODO
 Version 1.0 Release
@@ -18,16 +16,11 @@ Version 1.0 Release
 
 Future release
 - Use SSE to keep UX up to date in real time.
-- Allow deletion of events and logs from the UX.
 - Button to create speedtest report.
     - As a PDF
     - With a graph and speed test history
     - Allow week/month reports.
-
-- Allow a Notes field on an event.
 - Improve monitor ping to average out the hosts latency. Maybe store all the real values, but when graphing, build an average.
-- Setup Redis
-    - Secure with username/pass and store securely in Flask
 - Improve logging
     - Sort logs on homepage by date
     - Improve the log.html view
