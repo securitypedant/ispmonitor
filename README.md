@@ -8,6 +8,7 @@ FIXME
 - Improve tools page formatting
 - Reverse order of data in graph
 - Secure Redis connection with username/pass and store securely in Flask
+- Update setting of secret key for app, storing in env variable
 
 TODO
 Version 1.0 Release

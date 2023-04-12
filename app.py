@@ -29,9 +29,16 @@ app.secret_key = 'BAD_SECRET_KEY'
 
 # Setup logging file
 logger = logging.getLogger(config.loggerName)
+ap_logger = logging.getLogger('apscheduler')
 redis_conn = getRedisConn()
 
-scheduler = BackgroundScheduler()
+aplog_file_handler = logging.FileHandler('logs/apscheduler.log')
+aplog_file_handler.setLevel(get_configValue("logginglevel"))
+
+ap_logger.setLevel(get_configValue("logginglevel"))
+ap_logger.addHandler(aplog_file_handler)
+
+scheduler = BackgroundScheduler(logger=ap_logger)
 scheduler.start()
 jobCheckConnection = scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
 jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
@@ -61,6 +68,7 @@ def appStartup():
     if not os.path.exists("graphdata"):
         os.makedirs("graphdata")
 
+    redis_conn.set('currentState', 'online')
     redis_conn.set('isspeedtestrunning', 'no')
     redis_conn.set('isnetconfigjobrunning', 'no')
     redis_conn.set('currentstate', 'online')

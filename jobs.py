@@ -32,7 +32,7 @@ def scheduledCheckNetworkConfig():
 def scheduledSpeedTest():
     redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no" and redis_conn.get('currentState') == 'online':
-        logger.debug("Running speed test")
+        logger.info("Running speed test")
         speedTestResults = run_osSpeedtest()
         speedTestResultsList = [round(speedTestResults['download']['bytes'] / 1000 / 1000, 1), round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)]
 
