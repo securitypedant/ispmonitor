@@ -228,7 +228,6 @@ def os_ping(host, count=4, type='inet'):
 def run_osSpeedtest():
     """ Run a speedtest using the Ookla CLI tool, which allows returning results as json """
     redis_conn.set('isspeedtestrunning', 'yes')
-
     logger.debug("Starting speedtest")
     speedtestserverid = get_configValue('speedtestserverid')
     
@@ -238,19 +237,18 @@ def run_osSpeedtest():
         serverIDcmd = ""
     
     output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
-    output_string = json.loads(output_bytes.decode('utf-8'))
+    output = json.loads(output_bytes.decode('utf-8'))
 
-    result = "Ping:" + str(output_string['ping']['latency']) + " Down: " + str(output_string['download']['bytes'] / 1000 / 1000) + " Up: " + str(output_string['upload']['bytes'] / 1000 / 1000) + " Server: " + output_string['server']['host']
-    redis_conn.set('lastspeedtest', json.dumps({"ping": str(output_string['ping']['latency']), 
-                                                "download": str(round(output_string['download']['bytes'] / 1000 / 1000, 2)), 
-                                                "upload": str(round(output_string['upload']['bytes'] / 1000 / 1000, 2)), 
-                                                "server": str(output_string['server']['host'])})
+    result = "Ping:" + str(output['ping']['latency']) + " Down: " + str(output['download']['bytes'] / 1000 / 1000) + " Up: " + str(output['upload']['bytes'] / 1000 / 1000) + " Server: " + output['server']['host']
+    redis_conn.set('lastspeedtest', json.dumps({"ping": str(output['ping']['latency']), 
+                                                "download": str(round(output['download']['bytes'] / 1000 / 1000, 2)), 
+                                                "upload": str(round(output['upload']['bytes'] / 1000 / 1000, 2)), 
+                                                "server": str(output['server']['host'])})
                                                 )
     logger.debug("Speedtest results: " + result)
-
     redis_conn.set('isspeedtestrunning', 'no')
 
-    return output_string
+    return output
 
 def runSpeedtest():
     # https://github.com/sivel/speedtest-cli/wiki

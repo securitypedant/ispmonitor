@@ -33,10 +33,12 @@ def scheduledSpeedTest():
     redis_conn = getRedisConn()
     if redis_conn.get('isspeedtestrunning') == "no" and redis_conn.get('currentState') == 'online':
         logger.info("Running speed test")
-        speedTestResults = run_osSpeedtest()
-        speedTestResultsList = [round(speedTestResults['download']['bytes'] / 1000 / 1000, 1), round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)]
-
-        storeMonitorValue('speedtestResult', speedTestResultsList)
+        try:
+            speedTestResults = run_osSpeedtest()
+            speedTestResultsList = [round(speedTestResults['download']['bytes'] / 1000 / 1000, 1), round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)]
+            storeMonitorValue('speedtestResult', speedTestResultsList)
+        except Exception as inst:
+            logger.error("Speedtest failed: " + inst)    
     else:
         logger.warning("Scheduler attempted to run speedtest job, but it was already running.")
 

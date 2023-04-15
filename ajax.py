@@ -49,19 +49,21 @@ def ajax_traceroute():
 
 def ajaxspeedtest():
     redis_conn = getRedisConn()
-    if redis_conn.get('isspeedtestrunning') == "no":
-        speedTestResults = run_osSpeedtest()
-        
-        intDownloadSpeed = round(speedTestResults['download']['bytes'] / 1000 / 1000, 1)
-        intUploadSpeed = round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)
-
-        speedTestResultsList = [intDownloadSpeed, intUploadSpeed]
-        storeMonitorValue('speedtestResult', speedTestResultsList)
-
-        speedTestDisplay = "Down=" + str(intDownloadSpeed) + " Mbps, Up=" + str(intUploadSpeed) + " Mbps"
-        return jsonify(speedTestDisplay)
+    if redis_conn.get('isspeedtestrunning') == "no" and redis_conn.get('currentState') == 'online':
+        try:
+            speedTestResults = run_osSpeedtest()
+            
+            intDownloadSpeed = round(speedTestResults['download']['bytes'] / 1000 / 1000, 1)
+            intUploadSpeed = round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)
+            speedTestResultsList = [intDownloadSpeed, intUploadSpeed]
+            
+            storeMonitorValue('speedtestResult', speedTestResultsList)
+            speedTestDisplay = "Down=" + str(intDownloadSpeed) + " Mbps, Up=" + str(intUploadSpeed) + " Mbps"
+            return jsonify(speedTestDisplay)
+        except Exception as inst:
+            return jsonify("Speedtest failed: " + inst)
     else:
-        return jsonify("Speed test already running")
+        return jsonify("Speedtest already running")
 
 def ajaxListSpeedtestServers():
     logger.debug("Listing speedtest servers")
