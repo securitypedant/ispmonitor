@@ -38,7 +38,7 @@ def scheduledSpeedTest():
             speedTestResultsList = [round(speedTestResults['download']['bytes'] / 1000 / 1000, 1), round(speedTestResults['upload']['bytes'] / 1000 / 1000, 1)]
             storeMonitorValue('speedtestResult', speedTestResultsList)
         except Exception as inst:
-            logger.error("Speedtest failed: " + inst)    
+            logger.error("Speedtest failed in  job: " + inst)    
     else:
         logger.warning("Scheduler attempted to run speedtest job, but it was already running.")
 

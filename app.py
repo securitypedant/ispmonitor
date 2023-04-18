@@ -157,12 +157,14 @@ def home():
         if os.path.isfile(path):
             eventfiles.append(filename)
 
+    files = os.listdir(logFolder)
+    # include only files starting with "monitor"
+    filtered_files = [file for file in files if file.startswith('monitor')]
 
-
-    for filename in os.listdir(logFolder):
-        path = os.path.join(logFolder, filename)
+    for file in filtered_files:
+        path = os.path.join(logFolder, file)
         if os.path.isfile(path):
-            logfiles.append(filename)
+            logfiles.append(file)
 
     sorted_logfilelist = sorted(logfiles, key=lambda x: os.path.getmtime(os.path.join(logFolder, x)), reverse=True)
 
