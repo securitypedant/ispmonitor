@@ -236,10 +236,15 @@ def run_osSpeedtest():
     else:
         serverIDcmd = ""
     
-    output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
+    try:
+        output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
+    except Exception as inst:
+        logger.error("Speedtest failed in function: " + inst)
+    
     output = json.loads(output_bytes.decode('utf-8'))
 
     result = "Ping:" + str(output['ping']['latency']) + " Down: " + str(output['download']['bytes'] / 1000 / 1000) + " Up: " + str(output['upload']['bytes'] / 1000 / 1000) + " Server: " + output['server']['host']
+    
     redis_conn.set('lastspeedtest', json.dumps({"ping": str(output['ping']['latency']), 
                                                 "download": str(round(output['download']['bytes'] / 1000 / 1000, 2)), 
                                                 "upload": str(round(output['upload']['bytes'] / 1000 / 1000, 2)), 
