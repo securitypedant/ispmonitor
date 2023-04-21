@@ -5,6 +5,7 @@ This is a work in progress project. The final version will be a fully hostable I
 
 FIXME
 - Fix windows Ping function
+- Seperate scheduler log from monitor log in UX. Create a better log viewer for the scheduler log.
 - Improve tools page formatting
 - Reverse order of data in graph
 - Secure Redis connection with username/pass and store securely in Flask
@@ -14,6 +15,7 @@ TODO
 Version 1.0 Release
 - Create docs and setup.sh
 - Test all scenarios
+- Group events by day in an expandable tree. Total up outage time per day at the high level.
 
 Future release
 - Use SSE to keep UX up to date in real time.
