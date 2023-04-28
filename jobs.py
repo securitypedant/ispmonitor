@@ -13,18 +13,21 @@ def scheduledCheckNetworkConfig():
     redis_conn = getRedisConn()
     redis_conn.set('isnetconfigjobrunning', 'yes')
 
-    # Get a list of hosts from a traceroute.
-    networkHopsNow = traceroute(redis_conn.get('traceTargetHost'))[3]
-    networkHopsPast = json.loads(redis_conn.get('networkhops'))
-    
-    # Examine the first 5 hops and see if they have changed since the last check.
-    for index, host in enumerate(networkHopsNow):
-        if host == networkHopsPast[index]:
-            # No change to hop
-            pass
-        else:
-            # Hop has changed.
-            logger.warning("Network hop to internet has changed. Host:" + host + " and was #" + index + " in the route.")
+    try:
+        # Get a list of hosts from a traceroute.
+        networkHopsNow = traceroute(redis_conn.get('traceTargetHost'))[3]
+        networkHopsPast = json.loads(redis_conn.get('networkhops'))
+        
+        # Examine the first 5 hops and see if they have changed since the last check.
+        for index, host in enumerate(networkHopsNow):
+            if host == networkHopsPast[index]:
+                # No change to hop
+                pass
+            else:
+                # Hop has changed.
+                logger.warning("Network hop to internet has changed. Host:" + host + " and was #" + index + " in the route.")
+    except Exception as inst:
+        logger.error("Error in network config check: Network hops = " + networkHopsNow + "Exception:" + inst)
 
     redis_conn.set('networkhops', json.dumps(networkHopsNow))
     redis_conn.set('isnetconfigjobrunning', 'no')
