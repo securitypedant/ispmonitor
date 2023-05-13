@@ -25,9 +25,9 @@ def scheduledCheckNetworkConfig():
                 pass
             else:
                 # Hop has changed.
-                logger.warning("Network hop to internet has changed. Host:" + host + " and was #" + index + " in the route.")
+                logger.warning("Network hop to internet has changed. Host:" + host + " and was #" + str(index) + " in the route.")
     except Exception as inst:
-        logger.error("Error in network config check: Network hops = " + networkHopsNow + "Exception:" + inst)
+        logger.error("Error in network config check: Network hops = " + str(networkHopsNow) + "Exception:" + str(inst))
 
     redis_conn.set('networkhops', json.dumps(networkHopsNow))
     redis_conn.set('isnetconfigjobrunning', 'no')
