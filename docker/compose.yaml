@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis
+    container_name: redis
+    networks:
+      - ispmonitor
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+  ispmonitor:
+    image: ispmonitor
+    container_name: ispmonitor
+    networks:
+      - ispmonitor
+    ports:
+      - 8000:8000
+    volumes: 
+      - ispmonitor_logs:/logs
+
+volumes:
+  redis_data: {}
+  ispmonitor_logs: {}
+
+networks:
+  ispmonitor: {}
