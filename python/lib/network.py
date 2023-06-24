@@ -237,7 +237,7 @@ def run_osSpeedtest():
         serverIDcmd = ""
     
     try:
-        output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json"])
+        output_bytes = subprocess.check_output(['speedtest', "-s", serverIDcmd, "--format=json", "--accept-license"])
     except Exception as inst:
         logger.error("Speedtest failed in function: " + inst)
     
