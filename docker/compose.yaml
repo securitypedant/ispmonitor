@@ -22,12 +22,14 @@ services:
       - logs:/usr/src/app/logs
       - events:/usr/src/app/events
       - data:/usr/src/app/graphdata
+      - config:/usr/src/app/config
 
 volumes:
   redis_data: {}
   logs: {}
   events: {}
   data: {}
+  config: {}
 
 networks:
   ispmonitor: {}
