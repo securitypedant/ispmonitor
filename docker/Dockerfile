@@ -24,7 +24,7 @@ RUN pip install -r requirements.txt
 ###  Copy over python flask source files  ###
 #############################################
 COPY ../python/*.py .
-COPY ../python/config.yaml ./config.yaml
+COPY ../python/config/config.yaml ./config/config.yaml
 COPY ../python/templates ./templates
 COPY ../python/static ./static
 COPY ../python/lib ./lib

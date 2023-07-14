@@ -271,7 +271,7 @@ def config():
     else:
         interfaces = getLocalInterfaces()
 
-        with open('config.yaml', 'r') as configfile:
+        with open('config/config.yaml', 'r') as configfile:
             configdict = yaml.safe_load(configfile)
 
         return render_template("config.html", configdict=configdict, interfaces=interfaces)
