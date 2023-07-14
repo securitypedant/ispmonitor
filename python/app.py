@@ -228,11 +228,14 @@ def config():
         set_configValue('logginglevel', logger_level)
         
         set_configValue("pollfreq", int(request.form['pollfreq']))
+        set_configValue("pollamount", int(request.form['pollamount']))
         set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
         set_configValue('netconfigtestfreq', int(request.form['netconfigtestfreq']))
         set_configValue('datetimeformat', request.form['datetimeformat'])
         set_configValue('speedtestserverid', request.form['speedtestserverid'])
+
         set_configValue('defaultinterface', request.form['interfaceRadioGroup'])
+        redis_conn.set('defaultinterface', request.form['interfaceRadioGroup'])
         
         set_configValue('connectionmonitorjobstatus', request.form['connectiontestjob_options'])
         set_configValue('speedtestjobstatus', request.form['speedtestjob_options'])

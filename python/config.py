@@ -2,7 +2,7 @@ import yaml, platform
 import logging
 
 global dateTimeFormat, targetHosts, osType, loggerName
-configFile = "config.yaml"
+configFile = "config/config.yaml"
 loggerName = "monitor"
 logger = logging.getLogger(loggerName)
 osType = platform.system()

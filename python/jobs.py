@@ -50,11 +50,12 @@ def scheduledCheckConnection():
     if redis_conn.get('isnetconfigjobrunning') == "no" and redis_conn.get('isspeedtestrunning') == "no":
 
         hosts = get_configValue("hosts")
+        pollamount = get_configValue("pollamount")
         logger.debug("Attempting to reach " + str(hosts))
         redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
 
         # Check connection.
-        checkResult = checkConnection(hosts)
+        checkResult = checkConnection(hosts, pollamount)
         
         if checkResult[0] == 'success' or checkResult[0] == 'partial':
             # We are ONLINE

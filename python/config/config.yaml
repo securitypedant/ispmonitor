@@ -9,6 +9,7 @@ hosts:
   - inet
 logginglevel: INFO
 netconfigtestfreq: 86400
+pollamount: 2
 pollfreq: 10
 speedtestfreq: 7200
 speedtestjobstatus: run

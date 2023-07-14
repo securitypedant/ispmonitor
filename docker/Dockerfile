@@ -7,13 +7,9 @@ FROM python:3
 #############################################
 
 RUN apt-get update
-RUN apt-get install curl
-RUN apt-get -y install traceroute
-RUN apt-get -y install iputils-ping 
-RUN apt-get -y install net-tools
-RUN apt-get -y install nano
+RUN apt-get -y install traceroute iputils-ping net-tools nano curl
 RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
-RUN apt-get install speedtest
+RUN apt-get -y install speedtest
 RUN speedtest --servers --accept-license
 
 #############################################

@@ -64,7 +64,7 @@ def getLocalInterfaces():
     # return psutil.net_if_stats()
     return psutil.net_if_addrs()
 
-def checkConnection(hosts):
+def checkConnection(hosts, pollamount=2):
     """ Ping a list of hosts to determine if current connection is working correctly. """
     returnDict = []
     failedHosts = 0
@@ -77,7 +77,7 @@ def checkConnection(hosts):
         logger.debug("Pinging " + hostname)
         
         # Ping the host once,
-        pingReturn = os_ping(hostname, 1, hosttype)
+        pingReturn = os_ping(hostname, pollamount, hosttype)
 
         # ['success',[[google.com, 35, 'Success'][bbc.co.uk, 20, 'Success']]]
         # ['partial',[[google.com, 35, 'Success'][bbc.co.uk, 0, 'CannotResolve']]]
