@@ -10,7 +10,7 @@ services:
     volumes:
       - redis_data:/data
   ispmonitor:
-    image: simonsecuritypedant/ispmonitor:1.1
+    image: simonsecuritypedant/ispmonitor:1.3
     container_name: ispmonitor
     depends_on:
       - redis
@@ -19,10 +19,10 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - logs:/usr/src/app/logs
-      - events:/usr/src/app/events
-      - data:/usr/src/app/graphdata
-      - config:/usr/src/app/config
+      - logs:/usr/src/app/data/logs
+      - events:/usr/src/app/data/events
+      - data:/usr/src/app/data/graphdata
+      - config:/usr/src/app/data/config
 
 volumes:
   redis_data: {}

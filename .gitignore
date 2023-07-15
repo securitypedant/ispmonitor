@@ -1,10 +1,6 @@
 # App files
-events/
-logs/
+data/
 test/
-graphdata/
-graphdata/pingResult.json
-graphdata/speedtestResult.json
 .DS_Store
 
 # Byte-compiled / optimized / DLL files

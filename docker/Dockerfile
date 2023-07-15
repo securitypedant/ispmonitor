@@ -29,6 +29,6 @@ COPY ../python/templates ./templates
 COPY ../python/static ./static
 COPY ../python/lib ./lib
 
-RUN mkdir logs events graphdata
+RUN mkdir data data/logs data/events data/graphdata
 
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=8000"]

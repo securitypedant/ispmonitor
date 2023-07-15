@@ -6,6 +6,7 @@ This is a work in progress project. The final version will be a fully hostable I
 FIXME
 - Fix windows Ping function
 - Seperate scheduler log from monitor log in UX. Create a better log viewer for the scheduler log.
+- Do I need to run speedtest on app startup?
 - Improve tools page formatting
 - Reverse order of data in graph
 - Secure Redis connection with username/pass and store securely in Flask

@@ -25,6 +25,7 @@ from lib.redis_server import getRedisConn
 app = Flask(__name__)
 # Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
 # NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
+# FIXME: This needs to be external.
 app.secret_key = 'BAD_SECRET_KEY'
 
 # Setup logging file
@@ -32,7 +33,7 @@ logger = logging.getLogger(config.loggerName)
 ap_logger = logging.getLogger('apscheduler')
 redis_conn = getRedisConn()
 
-aplog_file_handler = logging.FileHandler('logs/apscheduler.log')
+aplog_file_handler = logging.FileHandler('data/logs/apscheduler.log')
 aplog_file_handler.setLevel(get_configValue("logginglevel"))
 
 ap_logger.setLevel(get_configValue("logginglevel"))
@@ -59,23 +60,27 @@ redis_conn.set('jobIDCheckNetConfig', jobCheckNetConfig.id)
 def appStartup():
     
     # Check if required folders exist.
-    if not os.path.exists("logs"):
-        os.makedirs("logs")
+    # FIXME: Must be a much better way of handling this.
+    if not os.path.exists("data"):
+        os.makedirs("data")
 
-    if not os.path.exists("events"):
-        os.makedirs("events")
+    if not os.path.exists("data/logs"):
+        os.makedirs("data/logs")
 
-    if not os.path.exists("graphdata"):
-        os.makedirs("graphdata")
+    if not os.path.exists("data/events"):
+        os.makedirs("data/events")
+
+    if not os.path.exists("data/graphdata"):
+        os.makedirs("data/graphdata")
 
     redis_conn.set('currentState', 'online')
     redis_conn.set('isspeedtestrunning', 'no')
     redis_conn.set('isnetconfigjobrunning', 'no')
     redis_conn.set('currentstate', 'online')
     redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
-    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "graphdata"))
-    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "events"))
-    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "logs"))
+    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "data/graphdata"))
+    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "data/events"))
+    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "data/logs"))
     redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
     redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
     redis_conn.set('lastspeedtest', json.dumps({"ping":"0", "download": "0", "upload": "0", "server":"None"}))
@@ -192,7 +197,7 @@ def home():
 @app.route("/log")
 def log():
     logfile = request.args.get("logid")
-    with open('logs/' + str(logfile), 'r') as file: 
+    with open('data/logs/' + str(logfile), 'r') as file: 
         lines = file.readlines()
         return render_template("log.html", lines=lines, logfilename=logfile)
 
