@@ -33,6 +33,13 @@ logger = logging.getLogger(config.loggerName)
 ap_logger = logging.getLogger('apscheduler')
 redis_conn = getRedisConn()
 
+# FIXME: Poor hack for folder creation on startup.
+if not os.path.exists("data"):
+    os.makedirs("data")
+
+if not os.path.exists("data/logs"):
+    os.makedirs("data/logs")
+
 aplog_file_handler = logging.FileHandler('data/logs/apscheduler.log')
 aplog_file_handler.setLevel(get_configValue("logginglevel"))
 

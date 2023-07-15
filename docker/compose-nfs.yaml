@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis
+    container_name: redis
+    networks:
+      - ispmonitor
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+  ispmonitor:
+    image: simonsecuritypedant/ispmonitor:1.4
+    container_name: ispmonitor
+    depends_on:
+      - redis
+    networks:
+      - ispmonitor
+    ports:
+      - 8000:8000
+    volumes:
+      - type: volume
+        source: config
+        target: /usr/src/app/config
+      - type: volume
+        source: data
+        target: /usr/src/app/data
+        
+volumes:
+  redis_data: {}
+
+  config:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas.host.local,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14,nfsvers=4"
+      device: ":/DockerVolumes/ispmonitor/config"
+
+  data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas.host.local,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14,nfsvers=4"
+      device: ":/DockerVolumes/ispmonitor/data"
+
+networks:
+  ispmonitor: {}
