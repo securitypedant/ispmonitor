@@ -1,4 +1,11 @@
- # Sample config for vscode for debugging.
+# Python Flask app
+Note, the best way to deploy this is via the Docker image. Please see the README in the folder above.
+
+This README containers information specific to running the Python Flask app in your own host.
+
+FIXME: Go over the instructions for setting up the app in a host.
+
+# Sample config for vscode for debugging.
 
 ```
 "configurations": [    
