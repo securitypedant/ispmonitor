@@ -1,6 +1,7 @@
  # Sample config for vscode for debugging.
- 
- "configurations": [    
+
+```
+"configurations": [    
         {
             "name": "Python: Flask",
             "type": "python",
@@ -18,6 +19,6 @@
             ],
             "jinja": true,
             "justMyCode": true,
-            "cwd": "python/"
+            "cwd": "${workspaceFolder}/python"
         }
-    ]
+```
