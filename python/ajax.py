@@ -2,11 +2,11 @@ import json
 import logging
 import subprocess
 
-from flask import jsonify, request
+from flask import jsonify, request, g
 
-import config as config
-from config import get_configValue
-from lib.datastore import storeMonitorValue
+import lib.config as config
+from lib.config import get_file_config_value
+from lib.datastore import storeMonitorValue, get_db_config_value
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 from lib.network import (checkDefaultGateway, checkDNSServers,
                          checkLocalInterface, checkNetworkHops,
@@ -27,15 +27,14 @@ def getGraphData():
     return graphData
 
 def ajax_checkinterface():
-    redis_conn = getRedisConn()
-    defaultInterface = redis_conn.get('defaultinterface')
+    defaultInterface = get_db_config_value(g.db, "defaultinterface")
     return checkLocalInterface(defaultInterface)
 
 def ajax_checkdefaultroute():
     return checkDefaultGateway(8)
 
 def ajax_checkdns():
-    hosts = get_configValue("hosts")
+    hosts = get_file_config_value("hosts")
     return_list = []
     for host in hosts:
         return_list.append(checkDNSServers(host[0]))
@@ -43,13 +42,13 @@ def ajax_checkdns():
     return return_list
 
 def ajax_traceroute():
-    redis_conn = getRedisConn()
-    networkHops = json.loads(redis_conn.get('networkhops'))
+    networkHops = json.loads(get_db_config_value(g.db, "networkhops")) 
     return checkNetworkHops(networkHops)
 
 def ajaxspeedtest():
     redis_conn = getRedisConn()
-    if redis_conn.get('isspeedtestrunning') == "no" and redis_conn.get('currentState') == 'online':
+
+    if get_db_config_value(g.db, "isspeedtestrunning") == "no" and get_db_config_value(g.db, "currentState") == 'online':
         try:
             speedTestResults = run_osSpeedtest()
             
@@ -82,7 +81,6 @@ def ajaxListSpeedtestServers():
 
 
 def ajaxTest():
-    redis_conn = getRedisConn()
-    networkHopCheck = checkNetworkHops(json.loads(redis_conn.get('networkhops')))
+    networkHopCheck = checkNetworkHops(json.loads(get_db_config_value(g.db, "networkhops")))
 
     return jsonify(networkHopCheck)

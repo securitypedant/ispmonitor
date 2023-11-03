@@ -11,6 +11,8 @@ FIXME
 - Reverse order of data in graph
 - Secure Redis connection with username/pass and store securely in Flask
 - Update setting of secret key for app, storing in env variable
+- Improve handling of failed speed test jobs that result in the error. "Scheduler attempted to run speedtest job, but it was already running."
+ - Maybe create a button in the config page to force reset the jobs?
 
 TODO
 Version 1.0 Release

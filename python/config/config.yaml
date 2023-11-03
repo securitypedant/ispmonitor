@@ -14,4 +14,10 @@ pollfreq: 10
 speedtestfreq: 7200
 speedtestjobstatus: run
 speedtestserverid: '18531'
-tracetargethost: 8.8.8.8
+tracetargethost: 1.1.1.1
+mongoDbPort: 27018
+mongoDbHost: localhost
+mongoDbUser: root
+mongoDbPass: 123qweQWE
+mongoDbName: ispmonitor
+appSecretKey: h79h4n93q4tny34c7y9nqn3pc3epy

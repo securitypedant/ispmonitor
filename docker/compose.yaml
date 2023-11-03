@@ -1,4 +1,16 @@
 services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    networks:
+      - ispmonitor
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123qweQWE
+    volumes:
+      - mongo_data:/data/db
   redis:
     image: redis
     container_name: redis
@@ -26,6 +38,7 @@ volumes:
   redis_data: {}
   data: {}
   config: {}
+  mongo_data: {}
 
 networks:
   ispmonitor: {}

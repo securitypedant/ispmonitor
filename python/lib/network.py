@@ -1,8 +1,8 @@
-import subprocess, logging, json, config as config
+import subprocess, logging, json, lib.config as config
 import logging, psutil, re
 from ping3 import ping
-import redis, netifaces, dns.resolver
-from config import get_configValue
+import netifaces, dns.resolver
+from lib.config import get_file_config_value
 from lib.datastore import getDateNow
 from lib.redis_server import getRedisConn
 
@@ -229,7 +229,7 @@ def run_osSpeedtest():
     """ Run a speedtest using the Ookla CLI tool, which allows returning results as json """
     redis_conn.set('isspeedtestrunning', 'yes')
     logger.debug("Starting speedtest")
-    speedtestserverid = get_configValue('speedtestserverid')
+    speedtestserverid = get_file_config_value('speedtestserverid')
     
     if speedtestserverid != 'Any':
         serverIDcmd = speedtestserverid
@@ -262,7 +262,7 @@ def runSpeedtest():
     redis_conn.set('isspeedtestrunning', 'yes')
 
     logger.debug("Starting speedtest")
-    speedtestserverid = get_configValue('speedtestserverid')
+    speedtestserverid = get_file_config_value('speedtestserverid')
 
     st = speedtest.Speedtest(secure=1)
 

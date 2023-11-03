@@ -1,67 +1,70 @@
-import json
-import logging
+import json, os, pathlib, yaml, humanize, logging, ajax
+
 import logging.handlers as handlers
-import os
-import pathlib
 from datetime import datetime, timedelta
 
-import humanize
-import redis
-import yaml
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, g
 
-import ajax
-import config as config
-from config import get_configValue, set_configValue
+from lib.config import get_file_config_value, set_file_config_value, DATE_FORMAT, update_config, read_config
 from jobs import (scheduledCheckConnection, scheduledCheckNetworkConfig,
                   scheduledSpeedTest)
-from lib.datastore import (createEventDict, deleteEvent, getLastSpeedTest,
-                           updateEvent)
+from lib.datastore import (db_connect, db_close, createEventDict, deleteEvent, getLastSpeedTest,
+                           updateEvent, set_db_config_value, get_db_config_value)
+
+from lib.datastore import DBConnection
 from lib.graphs import getLatencyGraphData, getSpeedtestGraphData
 from lib.network import getLocalInterfaces, traceroute
-from lib.redis_server import getRedisConn
 
 app = Flask(__name__)
 # Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
 # NOTE: The secret key is used to cryptographically-sign the cookies used for storing the session data.
-# FIXME: This needs to be external.
-app.secret_key = 'BAD_SECRET_KEY'
+app.secret_key = get_file_config_value("appSecretKey")
 
-# Setup logging file
-logger = logging.getLogger(config.loggerName)
-ap_logger = logging.getLogger('apscheduler')
-redis_conn = getRedisConn()
+# Constants
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+CONFIG_FILE = "config/config.yaml"
 
-# FIXME: Poor hack for folder creation on startup.
+# Setup database config.
+setup_config()
+
+# FIXME: Poor hack for folder creation on startup. Move this to a check environment function.
 if not os.path.exists("data"):
     os.makedirs("data")
 
 if not os.path.exists("data/logs"):
     os.makedirs("data/logs")
 
-aplog_file_handler = logging.FileHandler('data/logs/apscheduler.log')
-aplog_file_handler.setLevel(get_configValue("logginglevel"))
+# Setup logging file
+logger = logging.getLogger(config.loggerName)
 
-ap_logger.setLevel(get_configValue("logginglevel"))
+####### SETUP SCHEDULER #######
+# FIXME: Can we do all this in another file? Keep this app file as clean as we can?
+ap_logger = logging.getLogger('apscheduler')
+
+aplog_file_handler = logging.FileHandler('data/logs/apscheduler.log')
+aplog_file_handler.setLevel(get_file_config_value("logginglevel"))
+
+ap_logger.setLevel(get_file_config_value("logginglevel"))
 ap_logger.addHandler(aplog_file_handler)
 
 scheduler = BackgroundScheduler(logger=ap_logger)
 scheduler.start()
-jobCheckConnection = scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_configValue("pollfreq"), max_instances=1)
-jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_configValue("speedtestfreq"), max_instances=1)
-jobCheckNetConfig = scheduler.add_job(scheduledCheckNetworkConfig, 'interval', seconds=get_configValue("netconfigtestfreq"), max_instances=1)
 
-if get_configValue("connectionmonitorjobstatus") == "pause":
+jobCheckConnection = scheduler.add_job(scheduledCheckConnection, 'interval', seconds=get_file_config_value("pollfreq"), max_instances=1)
+jobSpeedTest = scheduler.add_job(scheduledSpeedTest, 'interval', seconds=get_file_config_value("speedtestfreq"), max_instances=1)
+jobCheckNetConfig = scheduler.add_job(scheduledCheckNetworkConfig, 'interval', seconds=get_file_config_value("netconfigtestfreq"), max_instances=1)
+
+if get_file_config_value("connectionmonitorjobstatus") == "pause":
     jobCheckConnection.pause()
-if get_configValue("speedtestjobstatus") == "pause":
+if get_file_config_value("speedtestjobstatus") == "pause":
     jobSpeedTest.pause()
-if get_configValue("checknetconfigjobstatus") == "pause":
+if get_file_config_value("checknetconfigjobstatus") == "pause":
     jobCheckNetConfig.pause()
 
-redis_conn.set('jobIDCheckConnection', jobCheckConnection.id)
-redis_conn.set('jobIDSpeedTest', jobSpeedTest.id)
-redis_conn.set('jobIDCheckNetConfig', jobCheckNetConfig.id)
+update_config("jobIDCheckConnection", jobCheckConnection.id)
+update_config("jobIDSpeedTest", jobSpeedTest.id)
+update_config("jobIDCheckNetConfig", jobCheckNetConfig.id)
 
 @app.before_first_request
 def appStartup():
@@ -80,63 +83,65 @@ def appStartup():
     if not os.path.exists("data/graphdata"):
         os.makedirs("data/graphdata")
 
-    redis_conn.set('currentState', 'online')
-    redis_conn.set('isspeedtestrunning', 'no')
-    redis_conn.set('isnetconfigjobrunning', 'no')
-    redis_conn.set('currentstate', 'online')
-    redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
-    redis_conn.set('graphdatafolder', str(pathlib.Path.cwd() / "data/graphdata"))
-    redis_conn.set('eventsdatafolder', str(pathlib.Path.cwd() / "data/events"))
-    redis_conn.set('logsdatafolder', str(pathlib.Path.cwd() / "data/logs"))
-    redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
-    redis_conn.set('defaultinterface', get_configValue("defaultinterface"))
-    redis_conn.set('lastspeedtest', json.dumps({"ping":"0", "download": "0", "upload": "0", "server":"None"}))
+    # This database connection should now last forever.
+    db = db_connect(DBConnection(mongodb_host, mongodb_port, mongodb_user, mongodb_pass), mongodb_name, True)
 
-    redis_conn.set('datetimeformat', get_configValue("datetimeformat"))
-    redis_conn.set('traceTargetHost', get_configValue("tracetargethost"))
-    networkhops = traceroute(redis_conn.get('traceTargetHost'))[3]
-    redis_conn.set('networkhops', json.dumps(networkhops))    
 
-    logger.setLevel(get_configValue("logginglevel"))
+    update_config("currentState", "online")
+    update_config("isspeedtestrunning", "no")
+    update_config("isnetconfigjobrunning", "no")
+    update_config("lastcheck", datetime.now().strftime(get_file_config_value('datetimeformat')))
+    update_config("graphdatafolder", str(pathlib.Path.cwd() / "data/graphdata"))
+    update_config("eventsdatafolder", str(pathlib.Path.cwd() / "data/events"))
+    update_config("logsdatafolder", str(pathlib.Path.cwd() / "data/logs"))
+    update_config("datetimeformat", DATE_FORMAT)
+    update_config("defaultinterface", get_file_config_value("defaultinterface"))
+    update_config("lastspeedtest", json.dumps({"ping":"0", "download": "0", "upload": "0", "server":"None"}))    
+    update_config("traceTargetHost", get_file_config_value("tracetargethost"))
+    
+    networkhops = traceroute(read_config("traceTargetHost"))[3]
+    update_config("networkhops", json.dumps(networkhops))
+
+    logger.setLevel(get_file_config_value("logginglevel"))
     formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    logHandler = handlers.TimedRotatingFileHandler(redis_conn.get('logsdatafolder') + '/monitor.log', when='D', interval=1, backupCount=7)
-    logHandler.setLevel(get_configValue("logginglevel"))
+    logHandler = handlers.TimedRotatingFileHandler(read_config("logsdatafolder") + '/monitor.log', when='D', interval=1, backupCount=7)
+    logHandler.setLevel(get_file_config_value("logginglevel"))
     logHandler.setFormatter(formatter)
     logger.addHandler(logHandler)
 
 @app.context_processor
 def get_last_speed_test():
-    lastspeedtest = json.loads(redis_conn.get('lastspeedtest'))
+    lastspeedtest = json.loads(get_db_config_value(g.db, "lastspeedtest"))
     return dict(lastspeedcheck=lastspeedtest)
 
 @app.context_processor
 def get_monitor_status():
-    if get_configValue("connectionmonitorjobstatus") == "pause":
+    if get_file_config_value("connectionmonitorjobstatus") == "pause":
         status = 'paused'
     else:
-        status = redis_conn.get('currentstate')
+        status = get_db_config_value(g.db, "currentstate")
         
     return dict(monitor_status=status)
 
 @app.context_processor
 def get_speedtest_staus():
-    if get_configValue("speedtestjobstatus") == "pause":
+    if get_file_config_value("speedtestjobstatus") == "pause":
         status = 'paused'
     else:
-        status = redis_conn.get('isspeedtestrunning')
+        status = get_db_config_value(g.db, "isspeedtestrunning")
     return dict(speedtest_status=status)
 
 @app.context_processor
 def get_netconfig_staus():
-    if get_configValue("checknetconfigjobstatus") == "pause":
+    if get_file_config_value("checknetconfigjobstatus") == "pause":
         status = 'paused'
     else:
-        status = redis_conn.get('isnetconfigjobrunning')
+        status = get_db_config_value(g.db, "isnetconfigjobrunning")
     return dict(netconfig_status=status)
 
 @app.context_processor
 def lastcheckdate():
-    lastcheck = redis_conn.get('lastcheck')
+    lastcheck = get_db_config_value(g.db, "lastcheck")
     lastcheck_obj = datetime.strptime(lastcheck, '%Y-%m-%d %H:%M:%S')
 
     duration = datetime.now() - lastcheck_obj
@@ -158,8 +163,8 @@ app.add_url_rule('/ajax/test', view_func=ajax.ajaxTest)
 @app.route("/", methods=['GET'])
 def home():
 
-    eventsFolder = redis_conn.get('eventsdatafolder')
-    logFolder = redis_conn.get('logsdatafolder')
+    eventsFolder = get_db_config_value(g.db, "eventsdatafolder")
+    logFolder = get_db_config_value(g.db, "logsdatafolder")
     eventfiles = []
     logfiles = []
     events = []
@@ -184,7 +189,7 @@ def home():
     for file in eventfiles:
         events.append(createEventDict(file))
     
-    sorted_events = sorted(events, key=lambda x: datetime.strptime(x['offline_timedate'], get_configValue('datetimeformat')), reverse=True)
+    sorted_events = sorted(events, key=lambda x: datetime.strptime(x['offline_timedate'], get_file_config_value('datetimeformat')), reverse=True)
 
     # Create graphJSON data
     ltgraphJSON = getLatencyGraphData('hour')
@@ -194,7 +199,7 @@ def home():
     return render_template(
         "home.html",
         events=sorted_events,
-        isSpeedTestRunning=redis_conn.get('isspeedtestrunning'),
+        isSpeedTestRunning=get_db_config_value(g.db, "isspeedtestrunning"),
         ltgraphJSON=ltgraphJSON,
         stgraphJSON=stgraphJSON,
         lastSpeedTest=lastSpeedTest,
@@ -213,7 +218,7 @@ def event():
     if request.method == 'POST':
         if 'save' in request.form:
             # Save title and notes to event and then return home.
-            with open(pathlib.Path(redis_conn.get('eventsdatafolder')) / request.form['eventid'], 'r') as json_file:
+            with open(pathlib.Path(get_db_config_value(g.db, "eventsdatafolder")) / request.form['eventid'], 'r') as json_file:
                 # Reading from json file
                 json_object = json.load(json_file)
                 json_object['notes'] = request.form['notes']
@@ -237,33 +242,33 @@ def config():
     if request.method == 'POST':
         #Enumerate form data into file.
         logger_level = request.form['logginglevel']
-        set_configValue('logginglevel', logger_level)
+        set_file_config_value('logginglevel', logger_level)
         
-        set_configValue("pollfreq", int(request.form['pollfreq']))
-        set_configValue("pollamount", int(request.form['pollamount']))
-        set_configValue('speedtestfreq', int(request.form['speedtestfreq']))
-        set_configValue('netconfigtestfreq', int(request.form['netconfigtestfreq']))
-        set_configValue('datetimeformat', request.form['datetimeformat'])
-        set_configValue('speedtestserverid', request.form['speedtestserverid'])
+        set_file_config_value("pollfreq", int(request.form['pollfreq']))
+        set_file_config_value("pollamount", int(request.form['pollamount']))
+        set_file_config_value('speedtestfreq', int(request.form['speedtestfreq']))
+        set_file_config_value('netconfigtestfreq', int(request.form['netconfigtestfreq']))
+        set_file_config_value('datetimeformat', request.form['datetimeformat'])
+        set_file_config_value('speedtestserverid', request.form['speedtestserverid'])
 
-        set_configValue('defaultinterface', request.form['interfaceRadioGroup'])
+        set_file_config_value('defaultinterface', request.form['interfaceRadioGroup'])
         redis_conn.set('defaultinterface', request.form['interfaceRadioGroup'])
         
-        set_configValue('connectionmonitorjobstatus', request.form['connectiontestjob_options'])
-        set_configValue('speedtestjobstatus', request.form['speedtestjob_options'])
-        set_configValue('checknetconfigjobstatus', request.form['netconfigjob_options'])
+        set_file_config_value('connectionmonitorjobstatus', request.form['connectiontestjob_options'])
+        set_file_config_value('speedtestjobstatus', request.form['speedtestjob_options'])
+        set_file_config_value('checknetconfigjobstatus', request.form['netconfigjob_options'])
 
-        if get_configValue("connectionmonitorjobstatus") == "pause":
+        if get_file_config_value("connectionmonitorjobstatus") == "pause":
             jobCheckConnection.pause()
-        elif get_configValue("connectionmonitorjobstatus") == "run":
+        elif get_file_config_value("connectionmonitorjobstatus") == "run":
             jobCheckConnection.resume()
-        if get_configValue("speedtestjobstatus") == "pause":
+        if get_file_config_value("speedtestjobstatus") == "pause":
             jobSpeedTest.pause()
-        elif get_configValue("speedtestjobstatus") == "run":
+        elif get_file_config_value("speedtestjobstatus") == "run":
             jobSpeedTest.resume()
-        if get_configValue("checknetconfigjobstatus") == "pause":
+        if get_file_config_value("checknetconfigjobstatus") == "pause":
             jobCheckNetConfig.pause()
-        elif get_configValue("checknetconfigjobstatus") == "run":
+        elif get_file_config_value("checknetconfigjobstatus") == "run":
             jobCheckNetConfig.resume()
 
         logger.setLevel(logger_level)
@@ -276,7 +281,7 @@ def config():
         for host, type in zip(hosts, host_types):
             combined_hosts.append([host, type])
 
-        set_configValue('hosts', combined_hosts)
+        set_file_config_value('hosts', combined_hosts)
 
         return redirect(url_for('home'))
 

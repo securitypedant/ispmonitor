@@ -1,6 +1,6 @@
-import logging, uuid, config as config, json
+import logging, uuid, lib.config as config, json
 from lib.network import traceroute, run_osSpeedtest, checkConnection, checkLocalInterface, checkDefaultGateway, checkDNSServers, checkNetworkHops
-from config import get_configValue
+from lib.config import get_file_config_value
 from lib.datastore import createEvent, updateEvent, storeMonitorValue, getDateNow, appendEvent
 from datetime import datetime
 from lib.redis_server import getRedisConn
@@ -49,10 +49,10 @@ def scheduledCheckConnection():
     redis_conn = getRedisConn()
     if redis_conn.get('isnetconfigjobrunning') == "no" and redis_conn.get('isspeedtestrunning') == "no":
 
-        hosts = get_configValue("hosts")
-        pollamount = get_configValue("pollamount")
+        hosts = get_file_config_value("hosts")
+        pollamount = get_file_config_value("pollamount")
         logger.debug("Attempting to reach " + str(hosts))
-        redis_conn.set('lastcheck', datetime.now().strftime(get_configValue('datetimeformat')))
+        redis_conn.set('lastcheck', datetime.now().strftime(get_file_config_value('datetimeformat')))
 
         # Check connection.
         checkResult = checkConnection(hosts, pollamount)

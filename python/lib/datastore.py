@@ -1,8 +1,60 @@
-import logging, config as config, json, glob, os
+import logging, lib.config as config, json, glob, os
 from json import JSONEncoder
 from datetime import datetime
 import json, pathlib
 from lib.redis_server import getRedisConn
+from lib.config import get_file_config_value, getDateNow
+
+from flask import g, current_app
+from pymongo import MongoClient
+
+
+def is_in_app_context():
+    try:
+        current_app._get_current_object()
+        return True
+    except RuntimeError:
+        return False
+
+class DBConnection:
+    def __init__(self, host, port, username, password) -> None:
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+
+    def __str__(self):
+        return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/"        
+
+def get_db_connection_data():
+    return DBConnection(
+        get_file_config_value("mongoDbHost"),
+        get_file_config_value("mongoDbPort"),
+        get_file_config_value("mongoDbUser"),
+        get_file_config_value("mongoDbPass")
+    )
+
+def db_connect(connection_details, database_name):
+    db_client = MongoClient(str(connection_details))
+    if is_in_app_context():
+        if "db" not in g:
+            g.db = db_client[database_name]
+        return g.db
+    else:
+        db = db_client[database_name]
+        return db
+
+def db_close(db):
+        db.close()
+
+def set_db_config_value(db, key, value):
+    configData = db['config']
+    configData.update_one({"_id": key}, {"$set": {"value": value}}, upsert=True)
+
+def get_db_config_value(db, key):
+    config_collection = db["config"]
+    config = config_collection.find_one({"_id": key})
+    return config["value"] if config else None
 
 logger = logging.getLogger(config.loggerName)
 redis_conn = getRedisConn()
@@ -10,10 +62,6 @@ redis_conn = getRedisConn()
 class encoder(JSONEncoder):
     def default(self, o):
             return o.__dict__
-
-def getDateNow() -> str:
-    timenow = datetime.now()
-    return timenow.strftime(redis_conn.get('datetimeformat'))
 
 def createEvent(eventDict):
     
