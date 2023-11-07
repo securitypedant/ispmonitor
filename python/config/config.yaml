@@ -7,10 +7,12 @@ hosts:
   - inet
 - - bbc.co.uk
   - inet
-logginglevel: INFO
+logginglevel: WARNING
 netconfigtestfreq: 86400
 pollamount: 2
 pollfreq: 10
+redis_host: localhost
+redis_port: 6379
 speedtestfreq: 7200
 speedtestjobstatus: run
 speedtestserverid: '18531'

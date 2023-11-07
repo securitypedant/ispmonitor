@@ -2,10 +2,11 @@ import redis, logging, config as config
 import sys
 
 logger = logging.getLogger(config.loggerName)
+from config import get_configValue
 
 # redis.exceptions.ConnectionError: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
 def getRedisConn():
-    redis_conn = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+    redis_conn = redis.Redis(host=get_configValue('redis_host'), port=get_configValue('redis_port'), db=0, decode_responses=True)
 
     try:
         redis_conn.ping()
